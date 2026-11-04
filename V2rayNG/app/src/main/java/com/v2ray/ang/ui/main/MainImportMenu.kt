@@ -13,6 +13,7 @@ import com.v2ray.ang.ui.compose.SelectListDialog
 private enum class ImportMenuAction(@StringRes val labelRes: Int, val action: MainAction) {
     QRCode(R.string.menu_item_import_config_qrcode, MainAction.ImportQRcode),
     Clipboard(R.string.menu_item_import_config_clipboard, MainAction.ImportClipboard),
+    AddSubscription(R.string.menu_item_add_subscription, MainAction.AddSubscription),
     LocalFile(R.string.menu_item_import_config_local, MainAction.ImportConfigLocal),
     PolicyGroup(R.string.menu_item_import_config_policy_group, MainAction.ImportManually(EConfigType.POLICYGROUP.value)),
     ProxyChain(R.string.menu_item_import_config_proxy_chain, MainAction.ImportManually(EConfigType.PROXYCHAIN.value)),

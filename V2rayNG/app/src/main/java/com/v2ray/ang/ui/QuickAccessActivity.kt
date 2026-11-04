@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -12,9 +14,14 @@ import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import java.io.ByteArrayInputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -58,6 +65,11 @@ class QuickAccessActivity : BaseComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onPause() {
+        CookieManager.getInstance().flush()
+        super.onPause()
     }
 
     fun launchFileChooser(
@@ -105,39 +117,54 @@ private const val SITE_FIX_SCRIPT = """
   if (window.__mbAppFix) return;
   window.__mbAppFix = true;
   var css = document.createElement('style');
-  css.textContent = '[class*="92dvh"]{max-height:min(92vh,40rem)!important}[class*="100dvh"]{height:100vh!important;min-height:100vh!important}[class*="backdrop-blur"]{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}button video{pointer-events:none!important}video{background:#111;max-width:100%}';
+  css.textContent = 'html,body,#root{background-color:#07111f;min-height:100%;color:#e8eef8}.aspect-video{min-height:160px}video{max-width:100%;background:#111}[class*="92dvh"]{max-height:min(92vh,40rem)}button video{pointer-events:none}';
   document.documentElement.appendChild(css);
-  function frame(v){
-    if (!v || v.dataset.mbFrame) return;
-    v.dataset.mbFrame = '1';
+  function mark(v){
+    if (!v || v.dataset.mbInline) return;
+    v.dataset.mbInline = '1';
     v.setAttribute('playsinline','');
     v.setAttribute('webkit-playsinline','');
     v.playsInline = true;
-    if (v.closest('button')) {
-      v.muted = true;
-      var show = function(){
-        var p = v.play();
-        if (p && p.then) p.then(function(){ setTimeout(function(){ try { v.pause(); } catch (e) {} }, 400); }).catch(function(){});
-      };
-      if (v.readyState >= 2) show();
-      else v.addEventListener('loadeddata', show, {once:true});
-    }
   }
-  function scan(){ document.querySelectorAll('video').forEach(frame); }
+  function scan(){ document.querySelectorAll('video').forEach(mark); }
   new MutationObserver(scan).observe(document.documentElement, {childList:true, subtree:true});
-  document.addEventListener('click', function(){
-    setTimeout(function(){
-      document.querySelectorAll('[role="dialog"] video').forEach(function(v){
-        v.playsInline = true;
-        v.setAttribute('playsinline','');
-        var p = v.play();
-        if (p && p.catch) p.catch(function(){ v.muted = true; v.play().catch(function(){}); });
-      });
-    }, 180);
-  }, true);
   scan();
 })();
 """
+
+private val legacyCssCache = HashMap<String, ByteArray>()
+
+private fun legacyStylesheet(request: WebResourceRequest): WebResourceResponse? {
+    val uri = request.url ?: return null
+    if (!uri.host.equals("mbarani.ir", ignoreCase = true)) return null
+    val path = uri.path ?: return null
+    if (!path.startsWith("/assets/index-") || !path.endsWith(".css") || path.contains(".legacy.")) {
+        return null
+    }
+    val legacy = uri.buildUpon().path(path.removeSuffix(".css") + ".legacy.css").build().toString()
+    val cached = synchronized(legacyCssCache) { legacyCssCache[legacy] }
+    val bytes = cached ?: downloadLegacyCss(legacy) ?: return null
+    return WebResourceResponse("text/css", "utf-8", ByteArrayInputStream(bytes))
+}
+
+private fun downloadLegacyCss(url: String): ByteArray? {
+    val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+        instanceFollowRedirects = true
+        connectTimeout = 15000
+        readTimeout = 20000
+        setRequestProperty("Accept", "text/css,*/*")
+    }
+    return try {
+        if (connection.responseCode !in 200..299) return null
+        connection.inputStream.use { it.readBytes() }.also { bytes ->
+            synchronized(legacyCssCache) { legacyCssCache[url] = bytes }
+        }
+    } catch (_: Exception) {
+        null
+    } finally {
+        connection.disconnect()
+    }
+}
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -202,18 +229,24 @@ private fun SiteScreen(
                         val cookies = CookieManager.getInstance()
                         cookies.setAcceptCookie(true)
                         cookies.setAcceptThirdPartyCookies(this, true)
+                        setBackgroundColor(Color.parseColor("#07111F"))
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.loadsImagesAutomatically = true
                         settings.useWideViewPort = true
-                        settings.loadWithOverviewMode = true
+                        settings.loadWithOverviewMode = false
                         settings.mediaPlaybackRequiresUserGesture = false
                         settings.javaScriptCanOpenWindowsAutomatically = true
-                        settings.setSupportMultipleWindows(true)
+                        settings.setSupportMultipleWindows(false)
                         settings.allowFileAccess = true
                         settings.allowContentAccess = true
-                        settings.userAgentString =
-                            "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.200 Mobile Safari/537.36"
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            settings.isAlgorithmicDarkeningAllowed = false
+                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            @Suppress("DEPRECATION")
+                            settings.forceDark = WebSettings.FORCE_DARK_OFF
+                        }
                         webChromeClient = object : WebChromeClient() {
                             private var customView: View? = null
                             private var customCallback: CustomViewCallback? = null
@@ -240,28 +273,6 @@ private fun SiteScreen(
                                 return true
                             }
 
-                            override fun onCreateWindow(
-                                view: WebView,
-                                isDialog: Boolean,
-                                isUserGesture: Boolean,
-                                resultMsg: android.os.Message?
-                            ): Boolean {
-                                val transport = resultMsg?.obj as? WebView.WebViewTransport ?: return false
-                                val popup = WebView(view.context)
-                                popup.webViewClient = object : WebViewClient() {
-                                    override fun shouldOverrideUrlLoading(
-                                        popupView: WebView,
-                                        request: WebResourceRequest
-                                    ): Boolean {
-                                        view.loadUrl(request.url.toString())
-                                        return true
-                                    }
-                                }
-                                transport.webView = popup
-                                resultMsg.sendToTarget()
-                                return true
-                            }
-
                             override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
                                 if (view == null) return
                                 onHideCustomView()
@@ -285,6 +296,11 @@ private fun SiteScreen(
                             }
                         }
                         webViewClient = object : WebViewClient() {
+                            override fun shouldInterceptRequest(
+                                view: WebView?,
+                                request: WebResourceRequest
+                            ): WebResourceResponse? = legacyStylesheet(request)
+
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 view?.evaluateJavascript(SITE_FIX_SCRIPT, null)
                             }
