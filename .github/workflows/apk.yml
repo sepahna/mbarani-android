@@ -1,0 +1,81 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+          packages: "platforms;android-37.0 build-tools;37.0.0 platform-tools"
+
+      - name: Install NDK
+        run: |
+          echo "y" | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            --install "ndk;30.0.16248370"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> "$GITHUB_ENV"
+
+      - name: Build hev tunnel libraries
+        run: bash compile-hevtun.sh
+
+      - name: Copy hev libraries
+        run: cp -a libs V2rayNG/app/
+
+      - name: Download libv2ray
+        run: |
+          git -C AndroidLibXrayLite fetch --tags --force
+          TAG="$(git -C AndroidLibXrayLite describe --tags --abbrev=0 || echo v26.10.31)"
+          echo "libv2ray tag: $TAG"
+          mkdir -p V2rayNG/app/libs
+          curl -fL --retry 3 -o V2rayNG/app/libs/libv2ray.aar \
+            "https://github.com/2dust/AndroidLibXrayLite/releases/download/${TAG}/libv2ray.aar"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build debug APK
+        working-directory: V2rayNG
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod 755 gradlew
+          ./gradlew assemblePlaystoreDebug --stacktrace
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: barani-apk
+          path: V2rayNG/app/build/outputs/apk/playstore/debug/*.apk
+          if-no-files-found: error
+
+      - name: Publish APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view apk >/dev/null 2>&1; then
+            gh release create apk \
+              --title "بارانی APK" \
+              --notes "نسخهٔ قابل نصب بارانی. شناسهٔ نصب: ir.mbarani.client. فایل universal روی بیشتر گوشی‌ها نصب می‌شود."
+          fi
+          gh release upload apk V2rayNG/app/build/outputs/apk/playstore/debug/*.apk --clobber
