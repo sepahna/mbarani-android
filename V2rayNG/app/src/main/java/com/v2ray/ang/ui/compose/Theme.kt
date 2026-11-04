@@ -103,6 +103,8 @@ private val DarkColor = darkColorScheme(
 
 // Semantic Colors
 val colorPing = Color(0xFF009966) // Green
+val colorPingSlow = Color(0xFFE6A23C) // Amber
+val colorPingIdle = Color(0xFF8A93A3) // Gray
 val colorPingRed = Color(0xFFFF0099) // Pink Red
 val colorConfigType = Color(0xFFf97910) // Orange
 val colorFabActive = Color(0xFFf97910) // Orange

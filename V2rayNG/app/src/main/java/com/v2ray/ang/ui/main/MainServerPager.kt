@@ -61,8 +61,11 @@ import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.ReorderableGridItem
 import com.v2ray.ang.ui.compose.ReorderableListItem
 import com.v2ray.ang.ui.compose.colorConfigType
+import androidx.compose.ui.graphics.Color
 import com.v2ray.ang.ui.compose.colorPing
+import com.v2ray.ang.ui.compose.colorPingIdle
 import com.v2ray.ang.ui.compose.colorPingRed
+import com.v2ray.ang.ui.compose.colorPingSlow
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
@@ -343,11 +346,12 @@ private fun ServerListItem(
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
-    val testResult = if (row.testDelayMillis == 0L) {
-        ""
-    } else {
-        stringResource(R.string.server_test_delay_value, row.testDelayMillis)
+    val testResult = when {
+        row.testDelayMillis == 0L -> ""
+        row.testDelayMillis < 0L -> "—"
+        else -> stringResource(R.string.server_test_delay_value, row.testDelayMillis)
     }
+    val pingColor = pingColor(row.testDelayMillis)
     val selectedStateDescription = if (isSelected) {
         stringResource(R.string.acc_selected_server)
     } else {
@@ -454,16 +458,34 @@ private fun ServerListItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    testResult,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (row.testDelayMillis < 0L) colorPingRed else colorPing,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (testResult.isNotEmpty()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(pingColor)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            testResult,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = pingColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+private fun pingColor(delayMillis: Long): Color = when {
+    delayMillis < 0L -> colorPingIdle
+    delayMillis < 300L -> colorPing
+    delayMillis < 800L -> colorPingSlow
+    else -> colorPingRed
 }
 
 internal suspend fun PagerState.navigateToPageOptimized(

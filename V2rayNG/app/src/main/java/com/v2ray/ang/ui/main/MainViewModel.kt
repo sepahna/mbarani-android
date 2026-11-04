@@ -14,8 +14,10 @@ import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.dto.entities.SubscriptionCache
+import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.isComplexType
+import com.v2ray.ang.handler.SpeedtestManager
 import com.v2ray.ang.extension.matchesPattern
 import com.v2ray.ang.extension.moveItem
 import com.v2ray.ang.handler.SubscriptionInfoParser
@@ -36,11 +38,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.regex.PatternSyntaxException
 
 private fun applyTestDelayResults(
@@ -109,6 +115,9 @@ class MainViewModel(
 
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
+    private var tcpRefreshJob: Job? = null
+    private var tcpRefreshGroupId: String? = null
+    private val tcpRefreshStamp = ConcurrentHashMap<String, Long>()
 
     private val initialPageReady = CompletableDeferred<Unit>()
 
@@ -487,6 +496,7 @@ class MainViewModel(
 
                 val selectedServers = loadGroup(selectedGroup, forceRefresh)
                 updateGroupUi(selectedGroup, selectedServers)
+                scheduleTcpRefresh(selectedGroup, force = forceRefresh)
 
                 if (!initialPageReady.isCompleted) {
                     initialPageReady.complete(Unit)
@@ -730,6 +740,7 @@ class MainViewModel(
         selectedGroupLoadJob = viewModelScope.launch(ioDispatcher) {
             try {
                 updateGroupUi(id, loadGroup(id))
+                scheduleTcpRefresh(id)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
@@ -816,7 +827,77 @@ class MainViewModel(
     }
 
     // ---------- Testing ----------
+    private fun scheduleTcpRefresh(groupId: String, force: Boolean = false) {
+        if (groupId.isEmpty() || testRequests.bulk != null) return
+        val elapsed = System.currentTimeMillis() - (tcpRefreshStamp[groupId] ?: 0L)
+        val sameRunning = tcpRefreshJob?.isActive == true && tcpRefreshGroupId == groupId
+        if (!force && elapsed < TCP_REFRESH_COOLDOWN_MS && (sameRunning || tcpRefreshStamp.containsKey(groupId))) {
+            return
+        }
+        tcpRefreshJob?.cancel()
+        tcpRefreshGroupId = groupId
+        tcpRefreshJob = viewModelScope.launch(ioDispatcher) {
+            try {
+                refreshTcpDelays(groupId)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                LogUtil.e(AppConfig.TAG, "Automatic TCP refresh failed", error)
+            }
+        }
+    }
+
+    private suspend fun refreshTcpDelays(groupId: String) {
+        val targets = loadGroup(groupId).mapNotNull(::tcpTarget)
+        if (targets.isEmpty()) return
+        val dispatcher = Executors.newFixedThreadPool(TCP_REFRESH_CONCURRENCY).asCoroutineDispatcher()
+        try {
+            coroutineScope {
+                targets.forEach { (guid, host, port) ->
+                    launch(dispatcher) {
+                        ensureActive()
+                        val delayMillis = SpeedtestManager.socketConnectTime(host, port, TCP_REFRESH_TIMEOUT_MS)
+                        if (!isActive) return@launch
+                        dataSource.encodeServerTestDelayMillis(guid, delayMillis)
+                        publishTcpResult(groupId, guid, delayMillis)
+                    }
+                }
+            }
+        } finally {
+            dispatcher.close()
+        }
+        tcpRefreshStamp[groupId] = System.currentTimeMillis()
+    }
+
+    private fun tcpTarget(cache: ServersCache): Triple<String, String, Int>? {
+        val profile = cache.profile
+        if (profile.configType.isComplexType()) return null
+        if (profile.configType == EConfigType.HYSTERIA2 || profile.configType == EConfigType.WIREGUARD) return null
+        if (profile.alpn?.split(',')?.all { it.trim().startsWith("h3") } == true) return null
+        val host = profile.server?.takeIf { it.isNotBlank() } ?: return null
+        val port = profile.serverPort?.toIntOrNull() ?: return null
+        return Triple(cache.guid, host, port)
+    }
+
+    private suspend fun publishTcpResult(groupId: String, guid: String, delayMillis: Long) {
+        val updates = mapOf(guid to delayMillis)
+        cacheMutex.withLock {
+            groupDataCache[groupId]?.let { cached ->
+                groupDataCache[groupId] = applyTestDelayResults(cached, updates)
+            }
+        }
+        mutableServerGroupState(groupId).update { current ->
+            current.copy(
+                servers = applyTestDelayResults(current.servers, updates),
+                rows = applyTestDelayResultsToRows(current.rows, updates),
+            )
+        }
+    }
+
     fun cancelAllPing() {
+        tcpRefreshJob?.cancel()
+        tcpRefreshJob = null
+        tcpRefreshGroupId = null
         bulkTestJob?.cancel()
         bulkTestJob = null
         testRequests.cancelBulk()
@@ -949,6 +1030,7 @@ class MainViewModel(
         reloadJob?.cancel()
         filterJob?.cancel()
         cancelAllPing()
+        tcpRefreshJob?.cancel()
         dataSource.close()
         super.onCleared()
     }
@@ -966,5 +1048,8 @@ class MainViewModel(
 
     private companion object {
         const val TEST_RESULT_FLUSH_INTERVAL_MS = 500L
+        const val TCP_REFRESH_COOLDOWN_MS = 30_000L
+        const val TCP_REFRESH_TIMEOUT_MS = 1500
+        const val TCP_REFRESH_CONCURRENCY = 16
     }
 }

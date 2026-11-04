@@ -177,6 +177,9 @@ class MainRepository(
             getServerGuidList(groupId).sumOf(::removeInvalidServerByGuid)
         }
 
+    override fun encodeServerTestDelayMillis(guid: String, testResult: Long) =
+        MmkvManager.encodeServerTestDelayMillis(guid, testResult)
+
     override fun clearAllTestDelayResults(guids: List<String>) =
         MmkvManager.clearAllTestDelayResults(guids)
 
