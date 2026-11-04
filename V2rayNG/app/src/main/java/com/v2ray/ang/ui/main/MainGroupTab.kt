@@ -1,27 +1,34 @@
 package com.v2ray.ang.ui.main
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +45,11 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -46,6 +57,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.R
 import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.entities.ServersCache
 import kotlinx.coroutines.flow.StateFlow
@@ -69,6 +81,7 @@ fun GroupTabBar(
     selectedTabIndex: Int,
     mainViewModel: MainViewModel,
     onTabClick: (Int) -> Unit,
+    onTabLongClick: (GroupMapItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val selectedIndex = selectedTabIndex.coerceIn(0, groups.lastIndex)
@@ -103,7 +116,10 @@ fun GroupTabBar(
                                 group = group,
                                 selected = index == selectedIndex,
                                 serverFlow = serverFlow,
-                                onClick = { onTabClick(index) }
+                                onClick = { onTabClick(index) },
+                                onLongClick = if (group.id.isEmpty()) null else {
+                                    { onTabLongClick(group) }
+                                }
                             )
                         }
                     }
@@ -162,12 +178,14 @@ private fun GroupTabItem(
     group: GroupMapItem,
     selected: Boolean,
     serverFlow: StateFlow<List<ServersCache>>,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)?
 ) {
     val servers by serverFlow.collectAsStateWithLifecycle()
     // The default group (empty id) never showed a count.
     val count = if (group.id.isEmpty()) 0 else servers.size
     val colors = MaterialTheme.colorScheme
+    val view = LocalView.current
     val bringIntoView = remember { BringIntoViewRequester() }
     var size by remember { mutableStateOf(IntSize.Zero) }
     val marginPx = with(LocalDensity.current) { SELECTED_TAB_MARGIN.toPx() }
@@ -189,7 +207,17 @@ private fun GroupTabItem(
             .onSizeChanged { size = it }
             .clip(CircleShape)
             .background(if (selected) colors.primary.copy(alpha = 0.12f) else Color.Transparent)
-            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
+            .combinedClickable(
+                role = Role.Tab,
+                onClick = onClick,
+                onLongClick = onLongClick?.let { longClick ->
+                    {
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        longClick()
+                    }
+                }
+            )
+            .semantics { this.selected = selected }
             .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -219,6 +247,123 @@ private fun GroupTabItem(
                     color = if (selected) colors.onPrimary else colors.surface,
                     maxLines = 1
                 )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun GroupTabActionDialog(
+    name: String,
+    onMove: () -> Unit,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface) {
+            Column(Modifier.padding(top = 20.dp, bottom = 8.dp)) {
+                Text(
+                    name,
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(8.dp))
+                TextButton(onClick = onMove, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        stringResource(R.string.group_tab_move),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        stringResource(R.string.group_tab_delete),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.action_cancel), modifier = Modifier.fillMaxWidth())
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun GroupMoveDialog(
+    group: GroupMapItem,
+    groups: List<GroupMapItem>,
+    onMoveBefore: (String) -> Unit,
+    onMoveLast: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val real = groups.filter { it.id.isNotEmpty() }
+    val index = real.indexOfFirst { it.id == group.id }
+    val beforeTargets = real.filter { other ->
+        val otherIndex = real.indexOfFirst { it.id == other.id }
+        other.id != group.id &&
+            otherIndex != index + 1 &&
+            !(index > 0 && other.id == real.first().id)
+    }
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface) {
+            Column(Modifier.padding(top = 20.dp, bottom = 8.dp)) {
+                Text(
+                    stringResource(R.string.group_tab_move_title),
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(8.dp))
+                Column(
+                    Modifier
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    if (real.size < 2) {
+                        Text(
+                            stringResource(R.string.group_tab_move_only_one),
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    } else {
+                        if (index > 0) {
+                            TextButton(
+                                onClick = { onMoveBefore(real.first().id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    stringResource(R.string.group_tab_move_first),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                        beforeTargets.forEach { other ->
+                            TextButton(
+                                onClick = { onMoveBefore(other.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    stringResource(R.string.group_tab_move_before, other.remarks),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                        if (index in 0 until real.lastIndex) {
+                            TextButton(onClick = onMoveLast, modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    stringResource(R.string.group_tab_move_last),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+                TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.action_cancel), modifier = Modifier.fillMaxWidth())
+                }
             }
         }
     }

@@ -16,6 +16,7 @@ import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.ServerAffiliationInfo
 import com.v2ray.ang.dto.entities.SubscriptionCache
 import com.v2ray.ang.dto.entities.SubscriptionItem
+import com.v2ray.ang.extension.moveItem
 import com.v2ray.ang.extension.serializable
 import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.AppLocaleManager
@@ -142,6 +143,28 @@ class MainRepository(
         }
         result += MmkvManager.decodeSubscriptions()
         return result
+    }
+
+    override fun moveSubscriptionBefore(groupId: String, beforeGroupId: String?): Boolean {
+        if (groupId.isEmpty()) return false
+        val ids = MmkvManager.decodeSubsList()
+        val from = ids.indexOf(groupId)
+        if (from < 0) return false
+        val toIndex = if (beforeGroupId == null) {
+            ids.lastIndex
+        } else {
+            val target = ids.indexOf(beforeGroupId)
+            if (target < 0 || target == from) return false
+            if (from < target) target - 1 else target
+        }
+        if (!ids.moveItem(from, toIndex)) return false
+        MmkvManager.encodeSubsList(ids)
+        return true
+    }
+
+    override fun removeSubscription(groupId: String) {
+        if (groupId.isEmpty()) return
+        SettingsManager.removeSubscriptionWithDefault(groupId)
     }
 
     override fun getSubscriptionItem(id: String): SubscriptionItem? =

@@ -26,9 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.R
+import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.LocalDarkTheme
 import com.v2ray.ang.ui.compose.QRCodeDialog
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -63,6 +67,9 @@ fun MainScreen(
     }
 
     var shareTarget by remember { mutableStateOf<Triple<String, ProfileItem, Boolean>?>(null) }
+    var tabMenu by remember { mutableStateOf<GroupMapItem?>(null) }
+    var moveTarget by remember { mutableStateOf<GroupMapItem?>(null) }
+    var deleteTarget by remember { mutableStateOf<GroupMapItem?>(null) }
     val removeServer: (String, String) -> Unit = { guid, profileName ->
         if (confirmRemove) {
             showRemoveConfirm = ServerDeleteTarget(guid, profileName)
@@ -135,6 +142,45 @@ fun MainScreen(
     }
     if (shareQRCodeBitmap != null) {
         QRCodeDialog(bitmap = shareQRCodeBitmap, onDismiss = { onAction(MainAction.DismissQRCodeDialog) })
+    }
+    tabMenu?.let { group ->
+        GroupTabActionDialog(
+            name = group.remarks,
+            onMove = {
+                tabMenu = null
+                moveTarget = group
+            },
+            onDelete = {
+                tabMenu = null
+                deleteTarget = group
+            },
+            onDismiss = { tabMenu = null }
+        )
+    }
+    moveTarget?.let { group ->
+        GroupMoveDialog(
+            group = group,
+            groups = groups,
+            onMoveBefore = { beforeId ->
+                mainViewModel.moveSubscription(group.id, beforeId)
+                moveTarget = null
+            },
+            onMoveLast = {
+                mainViewModel.moveSubscription(group.id, null)
+                moveTarget = null
+            },
+            onDismiss = { moveTarget = null }
+        )
+    }
+    deleteTarget?.let { group ->
+        ConfirmDialog(
+            title = stringResource(R.string.group_tab_delete_title),
+            message = stringResource(R.string.group_tab_delete_message, group.remarks),
+            confirmText = stringResource(R.string.action_yes),
+            dismissText = stringResource(R.string.action_no),
+            onConfirm = { mainViewModel.deleteSubscription(group.id) },
+            onDismiss = { deleteTarget = null }
+        )
     }
 
     ModalNavigationDrawer(
@@ -214,7 +260,8 @@ fun MainScreen(
                                         animateAdjacentPage = true
                                     )
                                 }
-                            }
+                            },
+                            onTabLongClick = { tabMenu = it }
                         )
                     }
 

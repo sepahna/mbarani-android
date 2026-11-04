@@ -10,6 +10,17 @@
     <string name="action_stop_service">توقف سرویس</string>
     <string name="action_ok">تأیید</string>
     <string name="action_cancel">لغو</string>
+    <string name="action_yes">بله</string>
+    <string name="action_no">نه</string>
+    <string name="group_tab_move">جابه‌جایی</string>
+    <string name="group_tab_delete">حذف</string>
+    <string name="group_tab_move_title">جابه‌جایی دسته‌بندی</string>
+    <string name="group_tab_move_first">بگذار اول</string>
+    <string name="group_tab_move_last">بگذار آخر</string>
+    <string name="group_tab_move_before">قبل از %1$s</string>
+    <string name="group_tab_move_only_one">فقط یک دسته‌بندی وجود دارد.</string>
+    <string name="group_tab_delete_title">حذف دسته‌بندی</string>
+    <string name="group_tab_delete_message">آیا مطمئنید «%1$s» و لینک اشتراکش حذف شود؟</string>
     <string name="migration_fail">انتقال داده‌ها با شکست مواجه شد!</string>
     <string name="pull_down_to_refresh">برای بروزرسانی، صفحه را به پایین بکشید!</string>
 

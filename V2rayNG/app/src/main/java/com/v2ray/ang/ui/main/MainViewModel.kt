@@ -798,6 +798,24 @@ class MainViewModel(
         _uiState.update { it.copy(selectedGuid = dataSource.getSelectServer()) }
     }
 
+    fun moveSubscription(groupId: String, beforeGroupId: String?) {
+        if (groupId.isEmpty()) return
+        viewModelScope.launch(ioDispatcher) {
+            if (!dataSource.moveSubscriptionBefore(groupId, beforeGroupId)) return@launch
+            setupGroupTab(forceRefresh = true).join()
+        }
+    }
+
+    fun deleteSubscription(groupId: String) {
+        if (groupId.isEmpty()) return
+        viewModelScope.launch(ioDispatcher) {
+            dataSource.removeSubscription(groupId)
+            cacheMutex.withLock { groupDataCache.clear() }
+            setupGroupTab(forceRefresh = true).join()
+            refreshSelectedGuid()
+        }
+    }
+
     fun removeServerAndRefresh(guid: String) {
         if (guid == uiState.value.selectedGuid) {
             toast(R.string.toast_action_not_allowed)

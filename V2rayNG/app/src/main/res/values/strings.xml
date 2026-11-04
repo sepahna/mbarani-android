@@ -10,6 +10,17 @@
     <string name="action_stop_service">Stop service</string>
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="group_tab_move">Move</string>
+    <string name="group_tab_delete">Delete</string>
+    <string name="group_tab_move_title">Move category</string>
+    <string name="group_tab_move_first">Move to the start</string>
+    <string name="group_tab_move_last">Move to the end</string>
+    <string name="group_tab_move_before">Before %1$s</string>
+    <string name="group_tab_move_only_one">There is only one category.</string>
+    <string name="group_tab_delete_title">Delete category</string>
+    <string name="group_tab_delete_message">Are you sure you want to delete “%1$s” and its subscription link?</string>
     <string name="migration_fail">Data migration failed!</string>
     <string name="pull_down_to_refresh">Please pull down to refresh!</string>
 
