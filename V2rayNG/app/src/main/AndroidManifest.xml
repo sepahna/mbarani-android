@@ -213,7 +213,8 @@
             android:exported="false" />
         <activity
             android:name=".ui.QuickAccessActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:hardwareAccelerated="true" />
         <activity
             android:name=".ui.TranslatorsActivity"
             android:exported="false" />

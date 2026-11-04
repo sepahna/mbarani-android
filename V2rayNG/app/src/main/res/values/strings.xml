@@ -295,6 +295,17 @@
     <string name="title_site_buy">خرید</string>
     <string name="title_site_ticket">تیکت</string>
     <string name="title_site_video">ویدیو</string>
+    <string name="acc_home">Home</string>
+    <string name="acc_guide">Guide</string>
+    <string name="guide_title">How to connect</string>
+    <string name="guide_intro">Three steps cover a subscription, a single config, and a refresh.</string>
+    <string name="guide_sub_title">Import a subscription</string>
+    <string name="guide_sub_body">Copy the subscription link from the buy page or your panel. Tap + at the top and choose “Import from Clipboard”. A subscription link becomes its own group and the servers appear inside it.\n\nYou can also open the menu, go to Subscriptions, and add the link there.</string>
+    <string name="guide_config_title">Import a config</string>
+    <string name="guide_config_body">Copy the config, or have its QR code or file ready. Tap + and choose clipboard, QR code, or a local file. When it appears in the list, tap it once so it is selected.</string>
+    <string name="guide_update_title">Update a subscription</string>
+    <string name="guide_update_body">When servers change, tap the vertical three dots at the top and choose “Update subscription”. The app reads the same link again and refreshes the list.\n\nThen select a server and tap the power button at the bottom to connect.</string>
+    <string name="guide_done">Got it</string>
     <string name="title_source_code">Source code</string>
     <string name="title_oss_license">Open-source licenses</string>
     <string name="title_translators">Translators</string>

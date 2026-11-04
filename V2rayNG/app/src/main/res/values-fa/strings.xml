@@ -295,6 +295,17 @@
     <string name="title_site_buy">خرید</string>
     <string name="title_site_ticket">تیکت</string>
     <string name="title_site_video">ویدیو</string>
+    <string name="acc_home">خانه</string>
+    <string name="acc_guide">راهنما</string>
+    <string name="guide_title">آموزش اتصال</string>
+    <string name="guide_intro">وارد کردن اشتراک، وارد کردن کانفیگ و به‌روزرسانی ساب، هر سه از همین‌جا.</string>
+    <string name="guide_sub_title">وارد کردن اشتراک</string>
+    <string name="guide_sub_body">لینک ساب را از صفحهٔ خرید یا پنل کپی کنید. علامت + بالای برنامه را بزنید و «کانفیگ را از کلیپ‌بورد وارد کنید» را انتخاب کنید. اگر لینک اشتراک باشد، یک گروه ساخته می‌شود و سرورها داخل همان گروه می‌آیند.\n\nراه دیگر: منوی سه‌خط را باز کنید، وارد «اشتراک‌ها» شوید و لینک را همان‌جا اضافه کنید.</string>
+    <string name="guide_config_title">وارد کردن کانفیگ</string>
+    <string name="guide_config_body">کانفیگ را کپی کنید، یا کد QR و فایلش را آماده داشته باشید. علامت + را بزنید و یکی از این‌ها را انتخاب کنید: از کلیپ‌بورد، از کد QR، یا از فایل محلی. بعد از اضافه شدن، همان مورد را در فهرست لمس کنید تا انتخاب شود.</string>
+    <string name="guide_update_title">به‌روزرسانی اشتراک</string>
+    <string name="guide_update_body">وقتی سرور جدید اضافه شد یا لینک عوض شد، سه‌نقطهٔ عمودی بالای صفحه را بزنید و «به‌روزرسانی گروه فعلی اشتراک» را انتخاب کنید. برنامه همان لینک را دوباره می‌خواند و فهرست را تازه می‌کند.\n\nبعد یک سرور را انتخاب کنید و دکمهٔ پاور پایین صفحه را بزنید تا اتصال روشن شود.</string>
+    <string name="guide_done">متوجه شدم</string>
     <string name="title_source_code">کد منبع</string>
     <string name="title_oss_license">مجوز های منبع باز</string>
     <string name="title_translators">مترجمان</string>
