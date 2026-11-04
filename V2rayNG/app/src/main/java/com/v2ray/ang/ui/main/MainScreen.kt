@@ -152,6 +152,7 @@ fun MainScreen(
         Scaffold(
             contentWindowInsets = ScaffoldDefaults.contentWindowInsets,
             topBar = {
+                Column {
                 MainTopBar(
                     isLoading = isLoading,
                     showSearch = showSearch,
@@ -183,6 +184,8 @@ fun MainScreen(
                         }
                     }
                 )
+                    SiteShortcutBar(onAction)
+                }
             },
             bottomBar = {
                 MainBottomBar(

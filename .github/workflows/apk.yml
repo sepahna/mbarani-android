@@ -80,10 +80,8 @@ jobs:
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: barani-apk
-          path: |
-            V2rayNG/app/build/outputs/apk/playstore/release/*arm64-v8a*.apk
-            V2rayNG/app/build/outputs/apk/playstore/release/*universal*.apk
+          name: barani-universal
+          path: V2rayNG/app/build/outputs/apk/playstore/release/*universal*.apk
           if-no-files-found: error
 
       - name: Publish APK release
@@ -91,11 +89,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' V2rayNG/app/build.gradle.kts | head -1)"
-          NOTES="برای گوشی فایل arm64-v8a را نصب کنید. به‌روزرسانی‌های بعدی از داخل خود برنامه دانلود می‌شوند و لازم نیست برنامه پاک شود."
+          NOTES="فقط همین فایل universal را نصب کنید. به‌روزرسانی‌های بعدی از داخل برنامه دانلود می‌شوند."
+          APK="$(ls V2rayNG/app/build/outputs/apk/playstore/release/*universal*.apk)"
           if gh release view "v$VER" >/dev/null 2>&1; then
-            gh release upload "v$VER" V2rayNG/app/build/outputs/apk/playstore/release/*.apk --clobber
+            gh release upload "v$VER" "$APK" --clobber
           else
-            gh release create "v$VER" V2rayNG/app/build/outputs/apk/playstore/release/*.apk \
+            gh release create "v$VER" "$APK" \
               --title "بارانی $VER" \
               --notes "$NOTES"
           fi

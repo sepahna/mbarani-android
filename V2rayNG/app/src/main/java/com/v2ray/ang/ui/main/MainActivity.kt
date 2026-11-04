@@ -143,6 +143,7 @@ class MainActivity : HelperBaseComponentActivity() {
                     is MainAction.ShareClipboard -> shareToClipboard(action.guid)
                     is MainAction.ShareFullContent -> shareFullContentAsync(action.guid)
                     is MainAction.OpenSubscriptionLink -> openSubscriptionLink(action.url)
+                    is MainAction.OpenSite -> openSite(action.url, action.title)
                     else -> mainViewModel.onAction(action)
                 }
             },
@@ -210,6 +211,14 @@ class MainActivity : HelperBaseComponentActivity() {
                 else toastError(R.string.toast_failure)
             }
         }
+    }
+
+    private fun openSite(url: String, title: String) {
+        startActivity(
+            Intent(this, QuickAccessActivity::class.java)
+                .putExtra(QuickAccessActivity.EXTRA_URL, url)
+                .putExtra(QuickAccessActivity.EXTRA_TITLE, title)
+        )
     }
 
     private fun openSubscriptionLink(url: String) {

@@ -38,10 +38,24 @@ class QuickAccessActivity : BaseComponentActivity() {
 
     @Composable
     override fun ScreenContent() {
+        val requested = intent.getStringExtra(EXTRA_URL).orEmpty()
+        val startUrl = if (requested.startsWith("https://mbarani.ir")) {
+            requested
+        } else {
+            AppConfig.SITE_URL
+        }
+        val title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
+            .ifBlank { stringResource(R.string.title_quick_access) }
         SiteScreen(
-            startUrl = AppConfig.SITE_URL,
+            startUrl = startUrl,
+            title = title,
             onBackClick = { finish() }
         )
+    }
+
+    companion object {
+        const val EXTRA_URL = "extra_url"
+        const val EXTRA_TITLE = "extra_title"
     }
 }
 
@@ -49,6 +63,7 @@ class QuickAccessActivity : BaseComponentActivity() {
 @Composable
 private fun SiteScreen(
     startUrl: String,
+    title: String,
     onBackClick: () -> Unit
 ) {
     var progress by remember { mutableIntStateOf(0) }
@@ -67,7 +82,7 @@ private fun SiteScreen(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             AppTopBar(
-                title = stringResource(R.string.title_quick_access),
+                title = title,
                 onBackClick = {
                     val page = webView
                     if (page != null && page.canGoBack()) page.goBack() else onBackClick()

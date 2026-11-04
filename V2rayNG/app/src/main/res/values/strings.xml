@@ -292,6 +292,9 @@
     <string name="title_quick_access">دسترسی سریع</string>
     <string name="title_website">وب‌سایت بارانی</string>
     <string name="title_site_channel">کانال</string>
+    <string name="title_site_buy">خرید</string>
+    <string name="title_site_ticket">تیکت</string>
+    <string name="title_site_video">ویدیو</string>
     <string name="title_source_code">Source code</string>
     <string name="title_oss_license">Open-source licenses</string>
     <string name="title_translators">Translators</string>
