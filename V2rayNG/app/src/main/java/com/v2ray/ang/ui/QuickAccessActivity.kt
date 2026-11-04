@@ -1,68 +1,34 @@
 package com.v2ray.ang.ui
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import android.webkit.CookieManager
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.ui.compose.AppTopBar
-import com.v2ray.ang.ui.compose.NavigationBarsSpacer
-import com.v2ray.ang.util.Utils
-
-private data class SiteLink(
-    val title: String,
-    val subtitle: String,
-    val path: String,
-    val badge: String = ""
-)
-
-private val quickSections = listOf(
-    "دسترسی سریع" to listOf(
-        SiteLink("خرید", "خرید سرویس", "/plans"),
-        SiteLink("سفارش‌ها", "پیگیری خرید", "/orders"),
-        SiteLink("تیکت", "پیگیری پیام", "/tickets", "جدید"),
-        SiteLink("پشتیبانی", "تماس و واتساپ", "/support"),
-        SiteLink("برنامه‌ها", "دانلود کلاینت", "/#apps"),
-        SiteLink("ویدیو", "آموزش ویدیویی", "/video"),
-        SiteLink("بلاگ", "مطالب آموزشی", "/blog"),
-        SiteLink("کانال", "کانال اطلاع‌رسانی", "/channel"),
-        SiteLink("کیف پول", "شارژ و خرید سریع", "/wallet"),
-        SiteLink("اپلیکیشن", "", "/app", "جدید"),
-        SiteLink("بازی", "بازی و جایزه", "/games", "جدید"),
-    ),
-    "امکانات دیگر" to listOf(
-        SiteLink("قیمت ارز و طلا", "دلار، تتر، طلا و ...", "/market"),
-        SiteLink("وضعیت سرور", "سرورها", "/", "آزمایشی"),
-    )
-)
 
 class QuickAccessActivity : BaseComponentActivity() {
 
@@ -72,20 +38,40 @@ class QuickAccessActivity : BaseComponentActivity() {
 
     @Composable
     override fun ScreenContent() {
-        QuickAccessScreen(onBackClick = { finish() })
+        SiteScreen(
+            startUrl = AppConfig.SITE_URL,
+            onBackClick = { finish() }
+        )
     }
 }
 
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
-private fun QuickAccessScreen(onBackClick: () -> Unit) {
-    val context = LocalContext.current
+private fun SiteScreen(
+    startUrl: String,
+    onBackClick: () -> Unit
+) {
+    var progress by remember { mutableIntStateOf(0) }
+    var webView by remember { mutableStateOf<WebView?>(null) }
+
+    BackHandler {
+        val page = webView
+        if (page != null && page.canGoBack()) {
+            page.goBack()
+        } else {
+            onBackClick()
+        }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.title_quick_access),
-                onBackClick = onBackClick
+                onBackClick = {
+                    val page = webView
+                    if (page != null && page.canGoBack()) page.goBack() else onBackClick()
+                }
             )
         }
     ) { innerPadding ->
@@ -93,103 +79,53 @@ private fun QuickAccessScreen(onBackClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.ic_barani_logo),
-                    contentDescription = stringResource(R.string.app_name),
-                    modifier = Modifier
-                        .size(72.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                )
-                Text(
-                    text = AppConfig.SITE_URL.removePrefix("https://"),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            if (progress in 1..99) {
+                LinearProgressIndicator(
+                    progress = { progress / 100f },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            quickSections.forEach { (title, links) ->
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                links.chunked(2).forEach { row ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        row.forEach { link ->
-                            SiteLinkCard(
-                                link = link,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    Utils.openUri(context, AppConfig.SITE_URL + link.path)
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                factory = { context ->
+                    WebView(context).apply {
+                        val cookies = CookieManager.getInstance()
+                        cookies.setAcceptCookie(true)
+                        cookies.setAcceptThirdPartyCookies(this, true)
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.loadsImagesAutomatically = true
+                        settings.useWideViewPort = true
+                        settings.loadWithOverviewMode = true
+                        settings.setSupportZoom(false)
+                        webChromeClient = object : WebChromeClient() {
+                            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                                progress = newProgress
+                            }
+                        }
+                        webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView,
+                                request: WebResourceRequest
+                            ): Boolean {
+                                val scheme = request.url.scheme.orEmpty()
+                                if (scheme == "http" || scheme == "https") return false
+                                runCatching {
+                                    view.context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, request.url)
+                                    )
                                 }
-                            )
+                                return true
+                            }
                         }
-                        repeat(2 - row.size) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                        loadUrl(startUrl)
+                        webView = this
                     }
                 }
-            }
-            NavigationBarsSpacer()
-        }
-    }
-}
-
-@Composable
-private fun SiteLinkCard(
-    link: SiteLink,
-    modifier: Modifier,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            if (link.badge.isNotEmpty()) {
-                Text(
-                    text = link.badge,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Text(
-                text = link.title,
-                style = MaterialTheme.typography.titleSmall,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
             )
-            if (link.subtitle.isNotEmpty()) {
-                Text(
-                    text = link.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
         }
     }
 }

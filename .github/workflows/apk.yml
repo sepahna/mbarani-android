@@ -35,7 +35,7 @@ jobs:
           echo "NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> "$GITHUB_ENV"
 
       - name: Build hev tunnel libraries
-        run: bash compile-hevtun.sh
+        run: NDK_DEBUG=0 bash compile-hevtun.sh
 
       - name: Copy hev libraries
         run: cp -a libs V2rayNG/app/
@@ -55,27 +55,48 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: V2rayNG
+        env:
+          STORE_B64: ${{ secrets.APP_KEYSTORE_BASE64 }}
+          STORE_PASS: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.APP_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.APP_KEY_PASSWORD }}
         run: |
+          if [ -z "$STORE_B64" ] || [ -z "$STORE_PASS" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASS" ]; then
+            echo "Release signing secrets are missing."
+            exit 1
+          fi
+          echo "$STORE_B64" | base64 -d > "$RUNNER_TEMP/barani-release.p12"
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
           chmod 755 gradlew
-          ./gradlew assemblePlaystoreDebug --stacktrace
+          ./gradlew assemblePlaystoreRelease --stacktrace \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/barani-release.p12" \
+            -Pandroid.injected.signing.store.password="$STORE_PASS" \
+            -Pandroid.injected.signing.store.type=pkcs12 \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS"
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: barani-apk
-          path: V2rayNG/app/build/outputs/apk/playstore/debug/*.apk
+          path: |
+            V2rayNG/app/build/outputs/apk/playstore/release/*arm64-v8a*.apk
+            V2rayNG/app/build/outputs/apk/playstore/release/*universal*.apk
           if-no-files-found: error
 
       - name: Publish APK release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if ! gh release view apk >/dev/null 2>&1; then
-            gh release create apk \
-              --title "بارانی APK" \
-              --notes "نسخهٔ قابل نصب بارانی. شناسهٔ نصب: ir.mbarani.client. فایل universal روی بیشتر گوشی‌ها نصب می‌شود."
+          VER="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' V2rayNG/app/build.gradle.kts | head -1)"
+          NOTES="برای گوشی فایل arm64-v8a را نصب کنید. به‌روزرسانی‌های بعدی از داخل خود برنامه دانلود می‌شوند و لازم نیست برنامه پاک شود."
+          if gh release view "v$VER" >/dev/null 2>&1; then
+            gh release upload "v$VER" V2rayNG/app/build/outputs/apk/playstore/release/*.apk --clobber
+          else
+            gh release create "v$VER" V2rayNG/app/build/outputs/apk/playstore/release/*.apk \
+              --title "بارانی $VER" \
+              --notes "$NOTES"
           fi
-          gh release upload apk V2rayNG/app/build/outputs/apk/playstore/debug/*.apk --clobber
+          gh release delete apk --yes --cleanup-tag || true

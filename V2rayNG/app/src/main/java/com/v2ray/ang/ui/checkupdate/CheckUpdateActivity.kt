@@ -1,8 +1,22 @@
 package com.v2ray.ang.ui.checkupdate
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
+import com.v2ray.ang.handler.ApkUpdateInstaller
+import com.v2ray.ang.handler.AppUpdateUi
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import java.io.File
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,9 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,11 +43,18 @@ import com.v2ray.ang.ui.compose.SettingsMenuItem
 import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.VersionInfoBlock
 import com.v2ray.ang.ui.compose.verticalScrollbar
-import com.v2ray.ang.util.Utils
 
 class CheckUpdateActivity : BaseComponentActivity() {
 
     private val viewModel: CheckUpdateViewModel by viewModels()
+    private var updateUi by mutableStateOf<AppUpdateUi?>(null)
+    private var updateJob: Job? = null
+    private var pendingUpdateApk: File? = null
+
+    private val unknownSourcesLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            pendingUpdateApk?.let { apk -> ApkUpdateInstaller.install(this, apk) }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,16 +65,57 @@ class CheckUpdateActivity : BaseComponentActivity() {
 
     @Composable
     override fun ScreenContent() {
-        CheckUpdateScreen(viewModel = viewModel, onBackClick = { finish() })
+        CheckUpdateScreen(
+            viewModel = viewModel,
+            onBackClick = { finish() },
+            onDownload = { url, version -> startDownload(url, version) }
+        )
+        updateUi?.let { state ->
+            UpdateProgressDialog(state = state, onDismiss = { cancelDownload() })
+        }
+    }
+
+    private fun startDownload(url: String, version: String) {
+        updateJob?.cancel()
+        updateUi = AppUpdateUi(version = version)
+        updateJob = lifecycleScope.launch {
+            val downloaded = runCatching {
+                ApkUpdateInstaller.download(applicationContext, url) { received, total ->
+                    updateUi = updateUi?.copy(received = received, total = total)
+                }
+            }
+            downloaded.onSuccess { apk ->
+                updateUi = updateUi?.copy(finished = true, received = apk.length())
+                pendingUpdateApk = apk
+                if (!ApkUpdateInstaller.canInstallPackages(this@CheckUpdateActivity)) {
+                    unknownSourcesLauncher.launch(
+                        Intent(
+                            Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:$packageName")
+                        )
+                    )
+                } else {
+                    ApkUpdateInstaller.install(this@CheckUpdateActivity, apk)
+                }
+            }.onFailure { error ->
+                if (error is CancellationException) return@onFailure
+                updateUi = updateUi?.copy(error = error.message)
+            }
+        }
+    }
+
+    private fun cancelDownload() {
+        updateJob?.cancel()
+        updateUi = null
     }
 }
 
 @Composable
 fun CheckUpdateScreen(
     viewModel: CheckUpdateViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onDownload: (url: String, version: String) -> Unit
 ) {
-    val context = LocalContext.current
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val checkPreRelease by viewModel.checkPreRelease.collectAsStateWithLifecycle()
@@ -115,7 +175,7 @@ fun CheckUpdateScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.dismissUpdateDialog()
-                    result.downloadUrl?.let { Utils.openUri(context, it) }
+                    result.downloadUrl?.let { onDownload(it, result.latestVersion.orEmpty()) }
                 }) {
                     Text(stringResource(R.string.update_now))
                 }

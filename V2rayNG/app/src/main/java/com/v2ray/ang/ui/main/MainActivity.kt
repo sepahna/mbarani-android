@@ -1,15 +1,30 @@
 package com.v2ray.ang.ui.main
 
 import android.content.Intent
+import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.KeyEvent
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.v2ray.ang.handler.ApkUpdateInstaller
+import com.v2ray.ang.handler.AppUpdateUi
+import com.v2ray.ang.handler.UpdateCheckerManager
+import com.v2ray.ang.ui.checkupdate.UpdateProgressDialog
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
@@ -50,9 +65,6 @@ import com.v2ray.ang.ui.subscription.SubSettingActivity
 import com.v2ray.ang.ui.userasset.UserAssetActivity
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : HelperBaseComponentActivity() {
 
@@ -92,11 +104,23 @@ class MainActivity : HelperBaseComponentActivity() {
             if (restartService) LauncherManager.restartService(this)
         }
 
+    private var updateUi by mutableStateOf<AppUpdateUi?>(null)
+    private var updateJob: Job? = null
+    private var pendingUpdateApk: File? = null
+
+    private val unknownSourcesLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            pendingUpdateApk?.let { apk -> ApkUpdateInstaller.install(this, apk) }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainViewModel.onAction(MainAction.Initialize)
 
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {}
+        if (savedInstanceState == null) {
+            checkAppUpdate()
+        }
     }
 
     @Composable
@@ -124,6 +148,55 @@ class MainActivity : HelperBaseComponentActivity() {
             },
             onNavigate = { route -> navigateTo(route) },
         )
+        updateUi?.let { state ->
+            UpdateProgressDialog(
+                state = state,
+                onDismiss = { cancelAppUpdate() }
+            )
+        }
+    }
+
+    private fun checkAppUpdate() {
+        updateJob?.cancel()
+        updateJob = lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching { UpdateCheckerManager.checkForUpdate(false) }.getOrNull()
+            } ?: return@launch
+            val url = result.downloadUrl
+            if (!result.hasUpdate || url.isNullOrBlank()) return@launch
+            updateUi = AppUpdateUi(version = result.latestVersion.orEmpty())
+            val downloaded = runCatching {
+                ApkUpdateInstaller.download(applicationContext, url) { received, total ->
+                    updateUi = updateUi?.copy(received = received, total = total)
+                }
+            }
+            downloaded.onSuccess { apk ->
+                updateUi = updateUi?.copy(finished = true, received = apk.length())
+                promptInstall(apk)
+            }.onFailure { error ->
+                if (error is CancellationException) return@onFailure
+                updateUi = updateUi?.copy(error = error.message)
+            }
+        }
+    }
+
+    private fun cancelAppUpdate() {
+        updateJob?.cancel()
+        updateUi = null
+    }
+
+    private fun promptInstall(apk: File) {
+        pendingUpdateApk = apk
+        if (!ApkUpdateInstaller.canInstallPackages(this)) {
+            unknownSourcesLauncher.launch(
+                Intent(
+                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:$packageName")
+                )
+            )
+            return
+        }
+        ApkUpdateInstaller.install(this, apk)
     }
 
     private fun shareToClipboard(guid: String): Boolean =

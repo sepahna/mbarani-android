@@ -61,7 +61,9 @@ object UpdateCheckerManager {
             "Found new version: $latestVersion (current: ${BuildConfig.VERSION_NAME})"
         )
 
-        return@withContext if (compareVersions(latestVersion, BuildConfig.VERSION_NAME) > 0) {
+        val comparableVersion = versionParts(latestVersion) ?: return@withContext CheckUpdateResult(hasUpdate = false)
+        val currentVersion = versionParts(BuildConfig.VERSION_NAME) ?: return@withContext CheckUpdateResult(hasUpdate = false)
+        return@withContext if (compareVersions(comparableVersion, currentVersion) > 0) {
             val downloadUrl = getDownloadUrl(latestRelease, Build.SUPPORTED_ABIS[0])
             CheckUpdateResult(
                 hasUpdate = true,
@@ -75,32 +77,35 @@ object UpdateCheckerManager {
         }
     }
 
-    private fun compareVersions(version1: String, version2: String): Int {
-        val v1 = version1.split(".")
-        val v2 = version2.split(".")
+    private fun versionParts(raw: String): List<Int>? {
+        val cleaned = raw.removePrefix("v").trim()
+        if (cleaned.isEmpty() || !cleaned.first().isDigit()) return null
+        return cleaned.split('.', '-', '_').map { token ->
+            token.takeWhile { it.isDigit() }.toIntOrNull() ?: 0
+        }
+    }
 
-        for (i in 0 until maxOf(v1.size, v2.size)) {
-            val num1 = if (i < v1.size) v1[i].toInt() else 0
-            val num2 = if (i < v2.size) v2[i].toInt() else 0
+    private fun compareVersions(version1: List<Int>, version2: List<Int>): Int {
+        for (i in 0 until maxOf(version1.size, version2.size)) {
+            val num1 = version1.getOrElse(i) { 0 }
+            val num2 = version2.getOrElse(i) { 0 }
             if (num1 != num2) return num1 - num2
         }
         return 0
     }
 
     private fun getDownloadUrl(release: GitHubRelease, abi: String): String {
+        val apks = release.assets.filter { it.name.endsWith(".apk", ignoreCase = true) }
         val fDroid = "fdroid"
-
-        val assetsByAbi = release.assets.filter {
-            (it.name.contains(abi, true))
-        }
-
+        val assetsByAbi = apks.filter { it.name.contains(abi, ignoreCase = true) }
         val asset = if (BuildConfig.APPLICATION_ID.contains(fDroid, ignoreCase = true)) {
-            assetsByAbi.firstOrNull { it.name.contains(fDroid) }
+            assetsByAbi.firstOrNull { it.name.contains(fDroid, ignoreCase = true) }
         } else {
-            assetsByAbi.firstOrNull { !it.name.contains(fDroid) }
+            assetsByAbi.firstOrNull { !it.name.contains(fDroid, ignoreCase = true) }
         }
 
         return asset?.browserDownloadUrl
+            ?: apks.firstOrNull { it.name.contains("universal", ignoreCase = true) }?.browserDownloadUrl
             ?: throw IllegalStateException("No compatible APK found")
     }
 }
