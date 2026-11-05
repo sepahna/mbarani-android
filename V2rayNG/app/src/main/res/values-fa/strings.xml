@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">بارانی</string>
+    <string name="app_name" translatable="false">Barani Core</string>
     <string name="app_widget_name">تعویض</string>
     <string name="app_tile_name">تعویض</string>
     <string name="app_tile_first_use">برای اولین استفاده از این قابلیت، لطفاً ابتدا از داخل برنامه یک سرور اضافه کنید</string>
@@ -459,7 +459,10 @@
     <string name="update_check_for_update">بررسی به روز رسانی</string>
     <string name="update_already_latest_version">در حال حاضر آخرین نسخه نصب شده است</string>
     <string name="update_new_version_found">نسخه جدید پیدا شد: %s</string>
-    <string name="update_now">اکنون به روز رسانی کنید</string>
+    <string name="update_now">آپدیت الان</string>
+    <string name="update_later">بعداً</string>
+    <string name="update_whats_new">تغییرات این نسخه</string>
+    <string name="update_no_release_notes">برای این نسخه توضیحی ثبت نشده است.</string>
     <string name="update_downloading">در حال دانلود به‌روزرسانی</string>
     <string name="update_download_failed">دانلود به‌روزرسانی انجام نشد</string>
     <string name="update_install_ready">دانلود تمام شد. در صفحهٔ بعد نصب را تأیید کنید. لازم نیست برنامهٔ فعلی پاک شود.</string>

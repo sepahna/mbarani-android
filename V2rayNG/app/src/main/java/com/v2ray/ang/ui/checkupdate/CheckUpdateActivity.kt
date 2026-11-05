@@ -71,7 +71,11 @@ class CheckUpdateActivity : BaseComponentActivity() {
             onDownload = { url, version -> startDownload(url, version) }
         )
         updateUi?.let { state ->
-            UpdateProgressDialog(state = state, onDismiss = { cancelDownload() })
+            UpdateProgressDialog(
+                state = state,
+                onUpdateNow = {},
+                onLater = { cancelDownload() }
+            )
         }
     }
 
@@ -182,7 +186,7 @@ fun CheckUpdateScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissUpdateDialog() }) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(stringResource(R.string.update_later))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface

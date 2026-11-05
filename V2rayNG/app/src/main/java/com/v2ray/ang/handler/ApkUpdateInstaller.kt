@@ -16,6 +16,9 @@ import kotlin.coroutines.coroutineContext
 
 data class AppUpdateUi(
     val version: String,
+    val notes: String = "",
+    val downloadUrl: String = "",
+    val awaitingChoice: Boolean = false,
     val received: Long = 0,
     val total: Long = -1,
     val error: String? = null,

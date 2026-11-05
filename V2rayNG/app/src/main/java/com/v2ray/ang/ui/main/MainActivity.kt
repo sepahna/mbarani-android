@@ -116,6 +116,7 @@ class MainActivity : HelperBaseComponentActivity() {
     private var updateUi by mutableStateOf<AppUpdateUi?>(null)
     private var updateJob: Job? = null
     private var pendingUpdateApk: File? = null
+    private var updateOfferDismissed = false
 
     private val unknownSourcesLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -164,20 +165,37 @@ class MainActivity : HelperBaseComponentActivity() {
         updateUi?.let { state ->
             UpdateProgressDialog(
                 state = state,
-                onDismiss = { cancelAppUpdate() }
+                onUpdateNow = { startOfferedUpdate() },
+                onLater = { deferAppUpdate() }
             )
         }
     }
 
     private fun checkAppUpdate() {
+        if (updateOfferDismissed) return
         updateJob?.cancel()
         updateJob = lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching { UpdateCheckerManager.checkForUpdate(false) }.getOrNull()
             } ?: return@launch
             val url = result.downloadUrl
-            if (!result.hasUpdate || url.isNullOrBlank()) return@launch
-            updateUi = AppUpdateUi(version = result.latestVersion.orEmpty())
+            if (!result.hasUpdate || url.isNullOrBlank() || updateOfferDismissed) return@launch
+            updateUi = AppUpdateUi(
+                version = result.latestVersion.orEmpty(),
+                notes = result.releaseNotes.orEmpty().trim(),
+                downloadUrl = url,
+                awaitingChoice = true,
+            )
+        }
+    }
+
+    private fun startOfferedUpdate() {
+        val state = updateUi?.takeIf { it.awaitingChoice } ?: return
+        val url = state.downloadUrl
+        if (url.isBlank()) return
+        updateUi = state.copy(awaitingChoice = false, received = 0, total = -1, error = null, finished = false)
+        updateJob?.cancel()
+        updateJob = lifecycleScope.launch {
             val downloaded = runCatching {
                 ApkUpdateInstaller.download(applicationContext, url) { received, total ->
                     updateUi = updateUi?.copy(received = received, total = total)
@@ -193,8 +211,9 @@ class MainActivity : HelperBaseComponentActivity() {
         }
     }
 
-    private fun cancelAppUpdate() {
+    private fun deferAppUpdate() {
         updateJob?.cancel()
+        updateOfferDismissed = true
         updateUi = null
     }
 

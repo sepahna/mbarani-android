@@ -89,13 +89,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' V2rayNG/app/build.gradle.kts | head -1)"
-          NOTES="فقط همین فایل universal را نصب کنید. به‌روزرسانی‌های بعدی از داخل برنامه دانلود می‌شوند."
+          NOTES_FILE="release-notes.txt"
+          if [ ! -f "$NOTES_FILE" ]; then
+            printf 'Barani Core %s\n' "$VER" > "$NOTES_FILE"
+          fi
           APK="$(ls V2rayNG/app/build/outputs/apk/playstore/release/*universal*.apk)"
           if gh release view "v$VER" >/dev/null 2>&1; then
             gh release upload "v$VER" "$APK" --clobber
+            gh release edit "v$VER" --title "Barani Core $VER" --notes-file "$NOTES_FILE"
           else
             gh release create "v$VER" "$APK" \
-              --title "بارانی $VER" \
-              --notes "$NOTES"
+              --title "Barani Core $VER" \
+              --notes-file "$NOTES_FILE"
           fi
           gh release delete apk --yes --cleanup-tag || true
