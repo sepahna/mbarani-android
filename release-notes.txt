@@ -1,7 +1,5 @@
 تغییرات این نسخه
-- بعد از افزودن اشتراک، کانفیگ‌ها یک‌بار خودشان دریافت می‌شوند.
-- دیگر لازم نیست از منوی سه‌نقطه گزینهٔ به‌روزرسانی اشتراک را بزنید.
+- آیکون‌های خرید، کانال، ویدیو و تیکت در صفحهٔ اصلی خطی و هماهنگ با آیکون‌های منو شدند.
 
 What's new
-- Saving a subscription fetches its configs once, automatically.
-- You no longer need to tap Update subscription in the top menu.
+- The buy, channel, video, and ticket icons on the main screen now match the menu icon style.
