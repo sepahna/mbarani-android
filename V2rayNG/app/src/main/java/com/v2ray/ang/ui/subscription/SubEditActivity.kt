@@ -1,5 +1,6 @@
 package com.v2ray.ang.ui.subscription
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,10 @@ import kotlinx.coroutines.launch
 
 class SubEditActivity : BaseComponentActivity() {
     private val editSubId by lazy { intent.getStringExtra("subId").orEmpty() }
+
+    companion object {
+        const val EXTRA_SAVED_SUB_ID = "savedSubId"
+    }
     private lateinit var suggestions: List<String>
     private lateinit var subItem: SubscriptionItem
 
@@ -93,9 +98,11 @@ class SubEditActivity : BaseComponentActivity() {
             return false
         }
 
-        MmkvManager.encodeSubscription(editSubId, subItem)
-        SubscriptionUpdater.syncOne(subId = editSubId)
+        val savedId = editSubId.ifBlank { Utils.getUuid() }
+        MmkvManager.encodeSubscription(savedId, subItem)
+        SubscriptionUpdater.syncOne(subId = savedId)
         SettingsChangeManager.makeSetupGroupTab()
+        setResult(RESULT_OK, Intent().putExtra(EXTRA_SAVED_SUB_ID, savedId))
         toastSuccess(R.string.toast_success)
         finish()
         return true

@@ -105,6 +105,14 @@ class MainActivity : HelperBaseComponentActivity() {
             if (restartService) LauncherManager.restartService(this)
         }
 
+    private val subscriptionEditorLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val savedId = result.data?.getStringExtra(SubEditActivity.EXTRA_SAVED_SUB_ID).orEmpty()
+            val refreshGroups = SettingsChangeManager.consumeSetupGroupTab()
+            if (savedId.isNotEmpty()) mainViewModel.focusSubscription(savedId)
+            if (refreshGroups) mainViewModel.onAction(MainAction.RefreshGroups)
+        }
+
     private var updateUi by mutableStateOf<AppUpdateUi?>(null)
     private var updateJob: Job? = null
     private var pendingUpdateApk: File? = null
@@ -135,7 +143,9 @@ class MainActivity : HelperBaseComponentActivity() {
                     MainAction.TestCurrentServer -> handleLayoutTestClick()
                     MainAction.ImportQRcode -> importQRcode()
                     MainAction.ImportClipboard -> importClipboard()
-                    MainAction.AddSubscription -> startActivity(Intent(this, SubEditActivity::class.java))
+                    MainAction.AddSubscription -> subscriptionEditorLauncher.launch(
+                        Intent(this, SubEditActivity::class.java)
+                    )
                     MainAction.ImportConfigLocal -> importConfigLocal()
                     is MainAction.ImportManually -> importManually(action.type)
                     MainAction.RestartService -> LauncherManager.restartServiceOrStart(this, ::requestServiceStart)

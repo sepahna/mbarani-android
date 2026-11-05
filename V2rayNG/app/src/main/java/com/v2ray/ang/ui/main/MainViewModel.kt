@@ -433,12 +433,14 @@ class MainViewModel(
 
     private fun resolveSelectedGroup(groups: List<GroupMapItem>): String {
         val current = uiState.value.selectedGroupId
+        val stored = dataSource.getSelectedSubscriptionId()
         val resolved = when {
             groups.isEmpty() -> ""
+            groups.any { it.id == stored } -> stored
             groups.any { it.id == current } -> current
             else -> groups.first().id
         }
-        if (resolved != current) {
+        if (resolved != stored) {
             dataSource.setSelectedSubscriptionId(resolved)
         }
         return resolved
@@ -728,6 +730,11 @@ class MainViewModel(
             listOf(uiState.value.selectedGroupId)
         }
         subs.forEach { dataSource.sortByTestResultsForSub(it) }
+    }
+
+    fun focusSubscription(groupId: String) {
+        if (groupId.isEmpty()) return
+        dataSource.setSelectedSubscriptionId(groupId)
     }
 
     fun subscriptionIdChanged(id: String) {
