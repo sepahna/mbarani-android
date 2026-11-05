@@ -1,13 +1,7 @@
 تغییرات این نسخه
-- نام برنامه به Barani Core تغییر کرد.
-- وقتی نسخهٔ جدید پیدا شود، دانلود خودش شروع نمی‌شود.
-- دو گزینه دارید: آپدیت الان یا بعداً.
-- با زدن بعداً، تا وقتی برنامه را کامل نبندید این کادر دوباره نمی‌آید. بعد از بستن و باز کردن، دوباره نمایش داده می‌شود.
-- قابلیت‌های جدید و رفع باگ هر نسخه در همین کادر نوشته می‌شود.
+- بعد از افزودن اشتراک، کانفیگ‌ها یک‌بار خودشان دریافت می‌شوند.
+- دیگر لازم نیست از منوی سه‌نقطه گزینهٔ به‌روزرسانی اشتراک را بزنید.
 
 What's new
-- The installed app name is now Barani Core.
-- A new version no longer starts downloading by itself.
-- Choose Update now or Later.
-- Later hides this box until the app is fully closed and opened again.
-- New features and bug fixes for the version are listed here.
+- Saving a subscription fetches its configs once, automatically.
+- You no longer need to tap Update subscription in the top menu.

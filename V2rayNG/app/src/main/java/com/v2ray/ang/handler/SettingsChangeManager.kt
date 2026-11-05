@@ -2,6 +2,7 @@ package com.v2ray.ang.handler
 
 import com.v2ray.ang.AppConfig
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Manages global flags for actions triggered by setting changes.
@@ -11,6 +12,7 @@ object SettingsChangeManager {
 
     private val restartService = AtomicBoolean(false)
     private val setupGroupTab = AtomicBoolean(false)
+    private val pendingSubscriptionImport = AtomicReference<String?>(null)
 
     // Keys that affect only UI behavior and do not require core service restart.
     private val uiOnlyKeys = setOf(
@@ -55,4 +57,10 @@ object SettingsChangeManager {
      */
     fun consumeSetupGroupTab(): Boolean =
         setupGroupTab.compareAndSet(true, false)
+
+    fun offerSubscriptionImport(subId: String) {
+        if (subId.isNotEmpty()) pendingSubscriptionImport.set(subId)
+    }
+
+    fun consumeSubscriptionImport(): String? = pendingSubscriptionImport.getAndSet(null)
 }

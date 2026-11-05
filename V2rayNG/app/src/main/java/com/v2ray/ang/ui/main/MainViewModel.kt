@@ -569,6 +569,15 @@ class MainViewModel(
         }
     }
 
+    fun importSavedSubscription(subId: String) {
+        if (subId.isEmpty()) return
+        viewModelScope.launch {
+            val item = withContext(ioDispatcher) { dataSource.getSubscriptionItem(subId) } ?: return@launch
+            if (!item.enabled || item.url.isBlank()) return@launch
+            importConfigViaSub(subId)
+        }
+    }
+
     private fun importConfigViaSub(subId: String) {
         launchLoading {
             withContext(ioDispatcher) {

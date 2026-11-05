@@ -101,6 +101,9 @@ class SubEditActivity : BaseComponentActivity() {
         val savedId = editSubId.ifBlank { Utils.getUuid() }
         MmkvManager.encodeSubscription(savedId, subItem)
         SubscriptionUpdater.syncOne(subId = savedId)
+        if (subItem.enabled && subItem.url.isNotBlank()) {
+            SettingsChangeManager.offerSubscriptionImport(savedId)
+        }
         SettingsChangeManager.makeSetupGroupTab()
         setResult(RESULT_OK, Intent().putExtra(EXTRA_SAVED_SUB_ID, savedId))
         toastSuccess(R.string.toast_success)

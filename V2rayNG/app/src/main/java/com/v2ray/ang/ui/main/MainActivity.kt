@@ -123,6 +123,14 @@ class MainActivity : HelperBaseComponentActivity() {
             pendingUpdateApk?.let { apk -> ApkUpdateInstaller.install(this, apk) }
         }
 
+    override fun onResume() {
+        super.onResume()
+        val savedSubId = SettingsChangeManager.consumeSubscriptionImport()
+        if (!savedSubId.isNullOrEmpty()) {
+            mainViewModel.importSavedSubscription(savedSubId)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainViewModel.onAction(MainAction.Initialize)
