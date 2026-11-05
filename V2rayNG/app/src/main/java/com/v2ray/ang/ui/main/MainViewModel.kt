@@ -160,6 +160,15 @@ class MainViewModel(
             }
 
             is MainServiceEvent.MeasureConfigSuccess -> {
+                if (testRequests.singleOrNull(event.requestId) != null) {
+                    val delayMillis = event.result.delayMillis
+                    val guid = event.result.guid
+                    viewModelScope.launch {
+                        applyDelayToCache(guid, delayMillis)
+                        applyDelayToOpenGroups(guid, delayMillis)
+                    }
+                    return
+                }
                 val request = testRequests.bulk?.takeIf { it.id == event.requestId } ?: return
                 queueTestResult(event.result, request)
             }
@@ -171,6 +180,10 @@ class MainViewModel(
             }
 
             is MainServiceEvent.MeasureConfigFinish -> {
+                if (testRequests.completeSingle(event.requestId) != null) {
+                    if (testRequests.bulk == null) resetTestStatus()
+                    return
+                }
                 val request = testRequests.bulk?.takeIf { it.id == event.requestId } ?: return
                 val scheduledFlush = testResultFlushJob
                 testResultFlushJob = viewModelScope.launch {
@@ -186,10 +199,10 @@ class MainViewModel(
             }
 
             is MainServiceEvent.MeasureConfigCancelled -> {
-                if (testRequests.completeBulk(event.requestId) != null) {
-                    cancelPendingTestResults()
-                    resetTestStatus()
-                }
+                val singleCancelled = testRequests.completeSingle(event.requestId) != null
+                val bulkCancelled = testRequests.completeBulk(event.requestId) != null
+                if (bulkCancelled) cancelPendingTestResults()
+                if (singleCancelled || bulkCancelled) resetTestStatus()
             }
         }
     }
@@ -299,6 +312,7 @@ class MainViewModel(
             is MainAction.SelectGroup -> subscriptionIdChanged(action.groupId)
             is MainAction.SelectServer -> updateSelectedGuid(action.guid)
             is MainAction.RemoveServer -> removeServerAndRefresh(action.guid)
+            is MainAction.TestServerRealPing -> testServerRealPing(action.guid)
             is MainAction.Search -> filterConfig(action.query)
             is MainAction.ImportBatchConfig -> importBatchConfig(action.configText)
             MainAction.LocateHandled -> consumeLocateTarget()
@@ -927,6 +941,7 @@ class MainViewModel(
         bulkTestJob?.cancel()
         bulkTestJob = null
         testRequests.cancelBulk()
+        testRequests.cancelSingles()
         testRequests.invalidateCurrent()
         cancelPendingTestResults()
         resetTestStatus()
@@ -997,6 +1012,53 @@ class MainViewModel(
         testResultFlushJob?.cancel()
         testResultFlushJob = null
         pendingTestResults.clear()
+    }
+
+    fun testServerRealPing(guid: String) {
+        if (guid.isBlank() || testRequests.hasSingleGuid(guid)) return
+        val requestId = testRequests.beginSingle(guid)
+        applyDelayToOpenGroups(guid, 0L)
+        if (testRequests.bulk == null) {
+            _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
+        }
+        viewModelScope.launch(ioDispatcher) {
+            dataSource.encodeServerTestDelayMillis(guid, 0L)
+            applyDelayToCache(guid, 0L)
+            dataSource.sendMsg2TestService(
+                TestServiceMessage(
+                    key = AppConfig.MSG_MEASURE_CONFIG_START,
+                    serverGuids = listOf(guid),
+                ),
+                requestId,
+            )
+        }
+    }
+
+    private fun applyDelayToOpenGroups(guid: String, delayMillis: Long) {
+        val updates = mapOf(guid to delayMillis)
+        groupUiFlows.keys.forEach { id ->
+            mutableServerGroupState(id).update { current ->
+                if (current.servers.none { it.guid == guid } && current.rows.none { it.guid == guid }) {
+                    current
+                } else {
+                    current.copy(
+                        servers = applyTestDelayResults(current.servers, updates),
+                        rows = applyTestDelayResultsToRows(current.rows, updates),
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun applyDelayToCache(guid: String, delayMillis: Long) {
+        val updates = mapOf(guid to delayMillis)
+        cacheMutex.withLock {
+            groupDataCache.keys.toList().forEach { id ->
+                val cached = groupDataCache[id] ?: return@forEach
+                if (cached.none { it.guid == guid }) return@forEach
+                groupDataCache[id] = applyTestDelayResults(cached, updates)
+            }
+        }
     }
 
     fun testCurrentServerRealPing() {

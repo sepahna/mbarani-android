@@ -9,7 +9,8 @@ internal class MainTestRequests {
     private var current: String? = null
     var bulk: Bulk? = null
         private set
-    val isTesting: Boolean get() = current != null || bulk != null
+    private val singles = LinkedHashMap<String, String>()
+    val isTesting: Boolean get() = current != null || bulk != null || singles.isNotEmpty()
 
     fun beginCurrent(): String = UUID.randomUUID().toString().also { current = it }
 
@@ -24,6 +25,19 @@ internal class MainTestRequests {
     }
 
     fun beginBulk(groupId: String): Bulk = Bulk(UUID.randomUUID().toString(), groupId).also { bulk = it }
+
+    fun hasSingleGuid(guid: String): Boolean = singles.containsValue(guid)
+
+    fun beginSingle(guid: String): String =
+        UUID.randomUUID().toString().also { singles[it] = guid }
+
+    fun singleOrNull(id: String): String? = singles[id]
+
+    fun completeSingle(id: String): String? = singles.remove(id)
+
+    fun cancelSingles() {
+        singles.clear()
+    }
 
     fun completeBulk(id: String): Bulk? {
         val request = bulk?.takeIf { it.id == id } ?: return null

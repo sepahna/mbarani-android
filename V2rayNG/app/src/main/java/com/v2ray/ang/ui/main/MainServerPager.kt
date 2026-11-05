@@ -87,6 +87,7 @@ fun GroupPagerPage(
     onShareServer: (String, ProfileItem) -> Unit,
     onMoreServer: (String, ProfileItem) -> Unit,
     onRemoveServer: (String, String) -> Unit,
+    onPingServer: (String) -> Unit,
     usageInfo: SubscriptionUsageInfo?,
     groupTitle: String,
     onOpenLink: (String) -> Unit,
@@ -103,6 +104,7 @@ fun GroupPagerPage(
         onShareServer,
         onMoreServer,
         onRemoveServer,
+        onPingServer,
     ) {
         ServerRowActions(
             select = onSelectServer,
@@ -110,6 +112,7 @@ fun GroupPagerPage(
             share = onShareServer,
             more = onMoreServer,
             remove = onRemoveServer,
+            ping = onPingServer,
         )
     }
     // The box floats over the list (the list scrolls underneath it), so the list is padded by the box height.
@@ -164,6 +167,7 @@ private class ServerRowActions(
     val share: (String, ProfileItem) -> Unit,
     val more: (String, ProfileItem) -> Unit,
     val remove: (String, String) -> Unit,
+    val ping: (String) -> Unit,
 )
 
 @Composable
@@ -403,6 +407,13 @@ private fun ServerListItem(
                         )
                     }
                 } else {
+                    IconButton(onClick = { actions.ping(row.guid) }, Modifier.size(36.dp)) {
+                        Icon(
+                            painterResource(R.drawable.ic_speed_24dp),
+                            stringResource(R.string.title_real_ping_all_server),
+                            Modifier.size(24.dp)
+                        )
+                    }
                     IconButton(onClick = { actions.share(row.guid, row.profile) }, Modifier.size(36.dp)) {
                         Icon(
                             painterResource(R.drawable.ic_share_24dp),
