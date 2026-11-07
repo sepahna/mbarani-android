@@ -567,6 +567,8 @@
     <string name="acc_add_rule">Add routing rule</string>
     <string name="acc_start">Start service</string>
     <string name="acc_stop">Stop service</string>
+    <string name="vpn_fab_on" translatable="false">on</string>
+    <string name="vpn_fab_off" translatable="false">off</string>
     <string name="acc_back">Back</string>
     <string name="acc_search">Search</string>
     <string name="acc_add">Add configuration</string>

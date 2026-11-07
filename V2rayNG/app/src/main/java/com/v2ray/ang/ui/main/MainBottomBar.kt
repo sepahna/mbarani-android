@@ -136,16 +136,27 @@ fun MainBottomBar(
                 else if (isDarkTheme) colorFabInactiveDark
                 else colorFabInactiveLight
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_power_24dp),
-                    contentDescription = stringResource(
-                        if (isRunning) R.string.acc_stop else R.string.acc_start
-                    ),
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .graphicsLayer { rotationZ = rotationAnim.value }
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_power_24dp),
+                        contentDescription = stringResource(
+                            if (isRunning) R.string.acc_stop else R.string.acc_start
+                        ),
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .graphicsLayer { rotationZ = rotationAnim.value }
+                    )
+                    Text(
+                        text = stringResource(
+                            if (isRunning) R.string.vpn_fab_on else R.string.vpn_fab_off
+                        ),
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
