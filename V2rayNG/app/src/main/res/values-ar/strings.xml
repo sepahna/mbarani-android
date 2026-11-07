@@ -10,6 +10,7 @@
     <string name="action_stop_service">إيقاف الخدمة</string>
     <string name="action_ok">موافق</string>
     <string name="action_cancel">إلغاء</string>
+    <string name="free_group_summary">يتم تحديثه من الموقع. أي إعداد يُحذف هناك يُحذف هنا في التحديث التالي.</string>
     <string name="migration_fail">فشلت عملية ترحيل البيانات!</string>
     <string name="pull_down_to_refresh">اسحب لأسفل للتحديث!</string>
 

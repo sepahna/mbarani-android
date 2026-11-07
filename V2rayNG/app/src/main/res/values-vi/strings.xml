@@ -10,6 +10,7 @@
     <string name="action_stop_service">Dừng dịch vụ</string>
     <string name="action_ok">OK</string>
     <string name="action_cancel">Hủy</string>
+    <string name="free_group_summary">Được cập nhật từ trang web. Cấu hình bị xóa ở đó sẽ bị xóa ở đây trong lần cập nhật tiếp theo.</string>
     <string name="migration_fail">Không thể chuyển dữ liệu!</string>
     <string name="pull_down_to_refresh">Kéo xuống để làm mới!</string>
 

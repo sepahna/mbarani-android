@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.entities.ProfileItem
@@ -146,6 +147,7 @@ fun MainScreen(
     tabMenu?.let { group ->
         GroupTabActionDialog(
             name = group.remarks,
+            allowDelete = group.id != AppConfig.FREE_SUBSCRIPTION_ID,
             onMove = {
                 tabMenu = null
                 moveTarget = group

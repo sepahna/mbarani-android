@@ -10,6 +10,7 @@
     <string name="action_stop_service">واڌاشتن سرویس</string>
     <string name="action_ok">قوۊل</string>
     <string name="action_cancel">لقو</string>
+    <string name="free_group_summary">سی سایت وانۊ أبۊ. کانفیگی که اوشوه پاک ابۊ، تو وانۊ کردن بعدی ایچو هم پاک أبۊ.</string>
     <string name="migration_fail">جاگورویی داده یل شکست خرد!</string>
     <string name="pull_down_to_refresh">سی وانۊ کردن، بلگه ن بلم بکشین!</string>
 

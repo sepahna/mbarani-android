@@ -1,7 +1,7 @@
 تغییرات این نسخه
-- پینگ خودکار سرورها الان تأخیر واقعی را نشان می‌دهد (مثل Test real delays)، نه فقط TCP.
-- زیر دکمه روشن/خاموش VPN متن on و off نمایش داده می‌شود.
+- دستهٔ پیش‌فرض «رایگان» اضافه شد و از سایت به‌روز می‌شود.
+- کانفیگ‌هایی که در فید رایگان سایت حذف شوند، با به‌روزرسانی بعدی از برنامه هم پاک می‌شوند.
 
 What's new
-- Automatic server ping now uses real delay (same as Test real delays), not TCP-only.
-- The VPN power button now shows on/off under the icon.
+- Added a built-in Free category that updates from the site feed.
+- Configs removed from the free site feed are cleared from the app on the next update.

@@ -10,6 +10,7 @@
     <string name="action_stop_service">停止服務</string>
     <string name="action_ok">確定</string>
     <string name="action_cancel">取消</string>
+    <string name="free_group_summary">從網站更新。網站上刪除的設定會在下次更新時從此處刪除。</string>
     <string name="migration_fail">資料遷移失敗！</string>
     <string name="pull_down_to_refresh">請下拉重新整理！</string>
 
