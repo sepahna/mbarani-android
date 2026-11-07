@@ -13,8 +13,8 @@ android {
         applicationId = "ir.mbarani.client"
         minSdk = 24
         targetSdk = 37
-        versionCode = 768
-        versionName = "2.3.28"
+        versionCode = 769
+        versionName = "2.3.29"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {

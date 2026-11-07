@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Barani Core</string>
-    <string name="app_widget_name">开关</string>
-    <string name="app_tile_name">开关</string>
+    <string name="app_name" translatable="false">v2rayBaran</string>
+    <string name="app_widget_name">v2rayBaran</string>
+    <string name="app_tile_name">v2rayBaran</string>
     <string name="app_tile_first_use">初次使用此功能请先用 APP 添加配置</string>
     <string name="navigation_drawer_open">打开导航栏</string>
     <string name="navigation_drawer_close">关闭导航栏</string>
@@ -11,6 +11,8 @@
     <string name="action_ok">确定</string>
     <string name="action_cancel">取消</string>
     <string name="free_group_summary">从网站更新。网站上删除的配置会在下次更新时从此处删除。</string>
+    <string name="free_group_empty_title">即将推出</string>
+    <string name="free_group_empty_message">请前往网站购买。</string>
     <string name="migration_fail">数据迁移失败啦!</string>
     <string name="pull_down_to_refresh">请下拉刷新!</string>
 

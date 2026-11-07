@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Barani Core</string>
-    <string name="app_widget_name">Kết nối ngay</string>
-    <string name="app_tile_name">Kết nối ngay</string>
+    <string name="app_name" translatable="false">v2rayBaran</string>
+    <string name="app_widget_name">v2rayBaran</string>
+    <string name="app_tile_name">v2rayBaran</string>
     <string name="app_tile_first_use">Vui lòng thêm một cấu hình vào v2rayNG để sử dụng!</string>
     <string name="navigation_drawer_open">Mở Menu ứng dụng</string>
     <string name="navigation_drawer_close">Đóng Menu ứng dụng</string>
@@ -11,6 +11,8 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Hủy</string>
     <string name="free_group_summary">Được cập nhật từ trang web. Cấu hình bị xóa ở đó sẽ bị xóa ở đây trong lần cập nhật tiếp theo.</string>
+    <string name="free_group_empty_title">Sắp ra mắt</string>
+    <string name="free_group_empty_message">Vui lòng truy cập trang web để mua.</string>
     <string name="migration_fail">Không thể chuyển dữ liệu!</string>
     <string name="pull_down_to_refresh">Kéo xuống để làm mới!</string>
 

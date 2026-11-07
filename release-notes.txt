@@ -1,7 +1,9 @@
 تغییرات این نسخه
-- دستهٔ پیش‌فرض «رایگان» اضافه شد و از سایت به‌روز می‌شود.
-- کانفیگ‌هایی که در فید رایگان سایت حذف شوند، با به‌روزرسانی بعدی از برنامه هم پاک می‌شوند.
+- نام برنامه و تاگل Quick Settings به v2rayBaran تغییر کرد.
+- آیکن جدید برنامه اعمال شد.
+- اگر دسته «رایگان» خالی باشد، پیام «به‌زودی» و راهنمای خرید از سایت نشان داده می‌شود.
 
 What's new
-- Added a built-in Free category that updates from the site feed.
-- Configs removed from the free site feed are cleared from the app on the next update.
+- Renamed the app and Quick Settings tile to v2rayBaran.
+- Updated the app icon.
+- When the Free category has no configs, show a coming-soon message and a site purchase CTA.

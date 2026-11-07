@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Barani Core</string>
-    <string name="app_widget_name">Keçid</string>
-    <string name="app_tile_name">Keçid</string>
+    <string name="app_name" translatable="false">v2rayBaran</string>
+    <string name="app_widget_name">v2rayBaran</string>
+    <string name="app_tile_name">v2rayBaran</string>
     <string name="app_tile_first_use">Bu funksiyanı istifadə etməzdən əvvəl tətbiqə profil əlavə edin.</string>
     <string name="navigation_drawer_open">Naviqasiya menyusunu açın</string>
     <string name="navigation_drawer_close">Naviqasiya menyusunu bağlayın</string>
@@ -11,6 +11,8 @@
     <string name="action_ok">Oldu</string>
     <string name="action_cancel">Ləğv et</string>
     <string name="free_group_summary">Saytdan yenilənir. Orada silinən konfiq burada növbəti yeniləmədə silinir.</string>
+    <string name="free_group_empty_title">Tezliklə</string>
+    <string name="free_group_empty_message">Alış üçün sayta müraciət edin.</string>
     <string name="migration_fail">Məlumatların köçürülməsi uğursuz oldu!</string>
     <string name="pull_down_to_refresh">Yeniləmək üçün aşağı çəkin!</string>
 
