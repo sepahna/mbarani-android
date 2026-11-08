@@ -33,6 +33,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -72,42 +73,56 @@ fun AppTopBar(
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClose: () -> Unit = {},
     searchPlaceholder: String? = null,
+    centerAligned: Boolean = false,
+    titleContent: (@Composable () -> Unit)? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
-    Column {
-        TopAppBar(
-            title = {
-                if (isSearchActive) {
-                    SearchInputField(
-                        query = searchQuery,
-                        onQueryChange = onSearchQueryChange,
-                        placeholder = searchPlaceholder
-                    )
-                } else {
-                    Text(text = title)
-                }
-            },
-            navigationIcon = {
-                if (navigationIcon != null) {
-                    navigationIcon()
-                } else {
-                    IconButton(onClick = if (isSearchActive) onSearchClose else onBackClick) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_arrow_back_24dp),
-                            contentDescription = stringResource(R.string.acc_back)
-                        )
-                    }
-                }
-            },
-            actions = actions,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                actionIconContentColor = MaterialTheme.colorScheme.onSurface
+    val colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+    )
+    val titleSlot: @Composable () -> Unit = {
+        when {
+            isSearchActive -> SearchInputField(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                placeholder = searchPlaceholder
             )
-        )
+            titleContent != null -> titleContent()
+            else -> Text(text = title)
+        }
+    }
+    val navigationSlot: @Composable () -> Unit = {
+        if (navigationIcon != null) {
+            navigationIcon()
+        } else {
+            IconButton(onClick = if (isSearchActive) onSearchClose else onBackClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_back_24dp),
+                    contentDescription = stringResource(R.string.acc_back)
+                )
+            }
+        }
+    }
+    Column {
+        if (centerAligned && !isSearchActive) {
+            CenterAlignedTopAppBar(
+                title = titleSlot,
+                navigationIcon = navigationSlot,
+                actions = actions,
+                colors = colors
+            )
+        } else {
+            TopAppBar(
+                title = titleSlot,
+                navigationIcon = navigationSlot,
+                actions = actions,
+                colors = colors
+            )
+        }
         AnimatedVisibility(
             visible = isLoading,
             enter = expandVertically(),

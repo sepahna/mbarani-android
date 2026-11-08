@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.main
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,6 +69,7 @@ fun MainTopBar(
     val channelTitle = stringResource(R.string.title_site_channel)
     val buyTitle = stringResource(R.string.title_site_buy)
     val isDarkTheme = LocalDarkTheme.current
+    val addDescription = stringResource(R.string.acc_add)
 
     AppTopBar(
         title = "",
@@ -76,6 +80,41 @@ fun MainTopBar(
         onSearchQueryChange = onSearchQueryChange,
         onSearchClose = onSearchClose,
         searchPlaceholder = stringResource(R.string.menu_item_search),
+        centerAligned = true,
+        titleContent = {
+            Box(modifier = Modifier.wrapContentSize(Alignment.TopCenter)) {
+                CenterAddButton(
+                    description = addDescription,
+                    onClick = {
+                        importMenuExpanded = false
+                        showImportMenu = true
+                    }
+                )
+                DropdownMenu(
+                    expanded = showImportMenu,
+                    onDismissRequest = {
+                        showImportMenu = false
+                        importMenuExpanded = false
+                    },
+                    scrollState = importMenuScrollState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier
+                        .widthIn(min = 320.dp)
+                        .heightIn(max = maxMenuHeight)
+                        .verticalScrollbar(importMenuScrollState)
+                ) {
+                    ImportMenuContent(
+                        showAllItems = importMenuExpanded,
+                        onShowMore = { importMenuExpanded = true },
+                        onAction = { action ->
+                            showImportMenu = false
+                            importMenuExpanded = false
+                            onAction(action)
+                        }
+                    )
+                }
+            }
+        },
         navigationIcon = {
             if (showSearch) {
                 IconButton(onClick = onSearchClose) {
@@ -83,30 +122,16 @@ fun MainTopBar(
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onMenuClick) {
-                        Icon(
-                            painterResource(R.drawable.ic_menu_24dp),
-                            contentDescription = stringResource(R.string.acc_open_menu)
-                        )
-                    }
-                    IconButton(
-                        onClick = {
-                            ThemeManager.setThemeMode(if (isDarkTheme) "1" else "2")
-                        }
+                    BarIcon(R.drawable.ic_menu_24dp, stringResource(R.string.acc_open_menu), onMenuClick)
+                    BarIcon(
+                        if (isDarkTheme) R.drawable.ic_sun_24dp else R.drawable.ic_moon_24dp,
+                        stringResource(R.string.acc_toggle_theme)
                     ) {
-                        Icon(
-                            painterResource(
-                                if (isDarkTheme) R.drawable.ic_sun_24dp else R.drawable.ic_moon_24dp
-                            ),
-                            contentDescription = stringResource(R.string.acc_toggle_theme)
-                        )
+                        ThemeManager.setThemeMode(if (isDarkTheme) "1" else "2")
                     }
                     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(
-                                painterResource(R.drawable.ic_sort_24dp),
-                                contentDescription = stringResource(R.string.acc_sort_servers)
-                            )
+                        BarIcon(R.drawable.ic_sort_24dp, stringResource(R.string.acc_sort_servers)) {
+                            showSortMenu = true
                         }
                         DropdownMenu(
                             expanded = showSortMenu,
@@ -135,60 +160,31 @@ fun MainTopBar(
                             )
                         }
                     }
+                    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+                        BarIcon(R.drawable.ic_more_vert_24dp, stringResource(R.string.acc_more)) {
+                            showMenu = true
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                            scrollState = moreMenuScrollState,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier
+                                .widthIn(min = 240.dp)
+                                .heightIn(max = maxMenuHeight)
+                                .verticalScrollbar(moreMenuScrollState)
+                        ) {
+                            MoreMenuContent { action ->
+                                showMenu = false
+                                onMoreMenuAction(action)
+                            }
+                        }
+                    }
                 }
             }
         },
         actions = {
             if (!showSearch) {
-                Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
-                    BarIcon(R.drawable.ic_more_vert_24dp, stringResource(R.string.acc_more)) {
-                        showMenu = true
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false },
-                        scrollState = moreMenuScrollState,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier
-                            .widthIn(min = 240.dp)
-                            .heightIn(max = maxMenuHeight)
-                            .verticalScrollbar(moreMenuScrollState)
-                    ) {
-                        MoreMenuContent { action ->
-                            showMenu = false
-                            onMoreMenuAction(action)
-                        }
-                    }
-                }
-                Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
-                    BarIcon(R.drawable.ic_add_24dp, stringResource(R.string.acc_add)) {
-                        importMenuExpanded = false
-                        showImportMenu = true
-                    }
-                    DropdownMenu(
-                        expanded = showImportMenu,
-                        onDismissRequest = {
-                            showImportMenu = false
-                            importMenuExpanded = false
-                        },
-                        scrollState = importMenuScrollState,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier
-                            .widthIn(min = 320.dp)
-                            .heightIn(max = maxMenuHeight)
-                            .verticalScrollbar(importMenuScrollState)
-                    ) {
-                        ImportMenuContent(
-                            showAllItems = importMenuExpanded,
-                            onShowMore = { importMenuExpanded = true },
-                            onAction = { action ->
-                                showImportMenu = false
-                                importMenuExpanded = false
-                                onAction(action)
-                            }
-                        )
-                    }
-                }
                 BarIcon(R.drawable.ic_channel_24dp, channelTitle) {
                     onAction(MainAction.OpenSite("${AppConfig.SITE_URL}/channel/", channelTitle))
                 }
@@ -207,6 +203,32 @@ fun MainTopBar(
             }
         }
     )
+}
+
+@Composable
+private fun CenterAddButton(
+    description: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .semantics {
+                role = Role.Button
+                contentDescription = description
+            }
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_add_24dp),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.size(24.dp)
+        )
+    }
 }
 
 @Composable
