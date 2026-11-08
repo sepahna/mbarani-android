@@ -136,12 +136,12 @@ object AppConfig {
     const val APP_API_URL = "https://api.github.com/repos/sepahna/mbarani-android/releases"
     /** Site-hosted update feed (preferred when GitHub is unreachable). */
     const val APP_UPDATE_FEED_URL = "$SITE_URL/sub/app"
+    /** Raw GitHub mirror of update.json (usually fresher than CDN cache). */
+    const val APP_UPDATE_RAW_URL =
+        "$GITHUB_RAW_URL/sepahna/mbarani-android/master/update.json"
     /** CDN mirror of update.json from the app repository. */
     const val APP_UPDATE_CDN_URL =
         "https://cdn.jsdelivr.net/gh/sepahna/mbarani-android@master/update.json"
-    /** Raw GitHub mirror of the same update.json. */
-    const val APP_UPDATE_RAW_URL =
-        "$GITHUB_RAW_URL/sepahna/mbarani-android/master/update.json"
     const val APP_ISSUES_URL = "$APP_URL/issues"
     const val APP_WIKI_MODE = "$GITHUB_URL/2dust/v2rayNG/wiki/Mode"
     const val APP_PRIVACY_POLICY = "$GITHUB_RAW_URL/2dust/v2rayNG/master/CR.md"

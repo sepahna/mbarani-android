@@ -21,6 +21,7 @@ object UpdateCheckerManager {
                 ?: return@withContext CheckUpdateResult(hasUpdate = false)
 
             val feedErrors = mutableListOf<String>()
+            var newestMiss: CheckUpdateResult? = null
             for (url in feedUrls(includePreRelease)) {
                 try {
                     val body = fetchText(url) ?: continue
@@ -28,21 +29,26 @@ object UpdateCheckerManager {
                         feedErrors += "$url returned HTML"
                         continue
                     }
-                    val fromSite = AppUpdateFeedParser.parse(body)
-                    if (fromSite != null) {
-                        return@withContext toResult(fromSite, currentVersion)
+                    val feed = AppUpdateFeedParser.parse(body)
+                        ?: parseGitHubRelease(body, includePreRelease)
+                    if (feed == null) {
+                        feedErrors += "$url: unrecognized update payload"
+                        continue
                     }
-                    val fromGitHub = parseGitHubRelease(body, includePreRelease)
-                    if (fromGitHub != null) {
-                        return@withContext toResult(fromGitHub, currentVersion)
+                    val result = toResult(feed, currentVersion)
+                    if (result.hasUpdate) {
+                        return@withContext result
                     }
-                    feedErrors += "$url: unrecognized update payload"
+                    // Stale CDN/site feed can report the current version while a newer
+                    // mirror already has the next release — keep searching.
+                    newestMiss = result
                 } catch (error: Exception) {
                     feedErrors += "$url: ${error.message}"
                     LogUtil.e(AppConfig.TAG, "Update check failed for $url", error)
                 }
             }
 
+            newestMiss?.let { return@withContext it }
             throw IllegalStateException(
                 feedErrors.lastOrNull() ?: "Failed to check for updates"
             )
@@ -51,8 +57,8 @@ object UpdateCheckerManager {
     private fun feedUrls(includePreRelease: Boolean): List<String> {
         val urls = linkedSetOf(
             AppConfig.APP_UPDATE_FEED_URL,
-            AppConfig.APP_UPDATE_CDN_URL,
             AppConfig.APP_UPDATE_RAW_URL,
+            AppConfig.APP_UPDATE_CDN_URL,
         )
         if (includePreRelease) {
             urls += AppConfig.APP_API_URL

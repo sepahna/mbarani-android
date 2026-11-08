@@ -1,7 +1,9 @@
 تغییرات این نسخه
 - آیکون + در مرکز نوار بالا، داخل مربع با گوشه گرد
-- چهار آیکون سمت چپ و چهار آیکون سمت راست برای تعادل چیدمان
+- چهار آیکون سمت چپ و چهار آیکون سمت راست
+- اگر فید آپدیت کش‌شده قدیمی باشد، بقیه منابع هم چک می‌شوند تا نسخه جدید از دست نرود
 
 What's new
 - Centered + button on the main top bar inside a rounded square
-- Four icons on the left and four on the right for balanced layout
+- Four icons on each side for balanced layout
+- Update check continues across feeds when a cached feed is stale

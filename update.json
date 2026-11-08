@@ -1,5 +1,5 @@
 {
-  "version": "2.3.36",
-  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.36/barani_2.3.36_universal.apk",
-  "notes": "آیکون + در مرکز نوار بالا داخل پس‌زمینه مربع گوشه‌گرد؛ چهار آیکون چپ و چهار آیکون راست.\n\nCentered + button on the top bar with a rounded square background; four icons on each side."
+  "version": "2.3.37",
+  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.37/barani_2.3.37_universal.apk",
+  "notes": "آیکون + در مرکز نوار بالا. چک آپدیت اگر فید کش‌شده قدیمی باشد، فیدهای دیگر را هم امتحان می‌کند.\n\nCentered + on the top bar. Update check keeps trying other feeds when a cached feed is stale."
 }
