@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">Kiểm tra độ trễ thực</string>
     <string name="title_user_asset_setting">Tệp tài nguyên</string>
     <string name="title_sort_by_test_results">Sắp xếp theo kết quả kiểm tra</string>
+    <string name="acc_toggle_theme">Chuyển sáng hoặc tối</string>
+    <string name="acc_sort_servers">Sắp xếp máy chủ</string>
+    <string name="acc_show_more_import">Hiện thêm tùy chọn nhập</string>
+    <string name="title_sort_by_ping">Ping tốt nhất</string>
+    <string name="title_sort_by_name">Tên</string>
+    <string name="title_sort_by_newest">Mới nhất</string>
+    <string name="title_sort_by_oldest">Cũ nhất</string>
     <string name="title_filter_config">Lọc cấu hình</string>
     <string name="filter_config_all">Tất cả</string>
     <string name="summary_scan_qrcode">Chạm vào màn hình để mở camera và quét</string>

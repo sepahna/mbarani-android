@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">প্রকৃত বিলম্ব পরীক্ষা করুন</string>
     <string name="title_user_asset_setting">অ্যাসেট ফাইল</string>
     <string name="title_sort_by_test_results">টেস্ট ফলাফল দ্বারা সাজানো</string>
+    <string name="acc_toggle_theme">লাইট বা ডার্ক থিম টগল করুন</string>
+    <string name="acc_sort_servers">সার্ভার সাজান</string>
+    <string name="acc_show_more_import">আরও ইমপোর্ট অপশন দেখান</string>
+    <string name="title_sort_by_ping">সেরা পিং</string>
+    <string name="title_sort_by_name">নাম</string>
+    <string name="title_sort_by_newest">নতুনতম</string>
+    <string name="title_sort_by_oldest">পুরোনোতম</string>
     <string name="title_filter_config">কনফিগারেশন ফাইল ফিল্টার করুন</string>
     <string name="filter_config_all">সব</string>
     <string name="summary_scan_qrcode">ক্যামেরা স্ক্যান খুলতে পর্দায় ট্যাপ করুন</string>

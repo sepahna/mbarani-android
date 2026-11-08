@@ -6,6 +6,19 @@ import org.junit.jupiter.api.Test
 class MainImportMenuTest {
 
     @Test
+    fun collapsedImportMenuShowsOnlyTheFirstFiveActions() {
+        assertEquals(
+            ImportMenuAction.entries.take(IMPORT_MENU_COLLAPSED_COUNT),
+            importMenuVisibleActions(showAllItems = false),
+        )
+    }
+
+    @Test
+    fun expandedImportMenuShowsEveryAction() {
+        assertEquals(ImportMenuAction.entries, importMenuVisibleActions(showAllItems = true))
+    }
+
+    @Test
     fun regularShareMenuContainsOnlyShareActions() {
         val expected = listOf(
             ServerMenuAction.ShareQRCode,

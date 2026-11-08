@@ -10,6 +10,7 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.ConnectionTestResult
 import com.v2ray.ang.dto.RealPingResult
+import com.v2ray.ang.dto.ServerSortMode
 import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
@@ -209,6 +210,10 @@ class MainRepository(
 
     override fun sortByTestResultsForSub(subId: String) {
         AngConfigManager.sortByTestResultsForSub(subId)
+    }
+
+    override fun sortServersForSub(subId: String, mode: ServerSortMode) {
+        AngConfigManager.sortServersForSub(subId, mode)
     }
 
     override fun getSubsList(): List<String> = MmkvManager.decodeSubsList()

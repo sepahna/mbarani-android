@@ -117,18 +117,40 @@ private const val SITE_FIX_SCRIPT = """
   if (window.__mbAppFix) return;
   window.__mbAppFix = true;
   var css = document.createElement('style');
-  css.textContent = 'html,body,#root{background-color:#07111f;min-height:100%;color:#e8eef8}.aspect-video{min-height:160px}video{max-width:100%;background:#111}[class*="92dvh"]{max-height:min(92vh,40rem)}button video{pointer-events:none}';
+  css.textContent = [
+    'html,body,#root{background-color:#07111f;min-height:100%;color:#e8eef8}',
+    '.aspect-video{min-height:160px}',
+    'video,iframe{max-width:100%;background:#111}',
+    'video{pointer-events:auto !important}',
+    '[class*="92dvh"]{max-height:min(92vh,40rem)}'
+  ].join('');
   document.documentElement.appendChild(css);
   function mark(v){
     if (!v || v.dataset.mbInline) return;
     v.dataset.mbInline = '1';
     v.setAttribute('playsinline','');
     v.setAttribute('webkit-playsinline','');
+    v.setAttribute('controls','controls');
     v.playsInline = true;
+    v.controls = true;
+    v.addEventListener('click', function(e){
+      try {
+        if (v.paused) { v.play(); } else { v.pause(); }
+      } catch (_) {}
+      e.stopPropagation();
+    }, true);
   }
-  function scan(){ document.querySelectorAll('video').forEach(mark); }
-  new MutationObserver(scan).observe(document.documentElement, {childList:true, subtree:true});
-  scan();
+  function unlockMedia(){
+    document.querySelectorAll('video').forEach(mark);
+    document.querySelectorAll('iframe').forEach(function(frame){
+      try {
+        frame.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen');
+        frame.setAttribute('allowfullscreen', 'true');
+      } catch (_) {}
+    });
+  }
+  new MutationObserver(unlockMedia).observe(document.documentElement, {childList:true, subtree:true});
+  unlockMedia();
 })();
 """
 
@@ -200,7 +222,7 @@ private fun SiteScreen(
                         }
                         IconButton(onClick = { goBack() }) {
                             Icon(
-                                painterResource(R.drawable.ic_arrow_back_24dp),
+                                painterResource(R.drawable.ic_chevron_left_24dp),
                                 contentDescription = stringResource(R.string.acc_back)
                             )
                         }
@@ -230,8 +252,10 @@ private fun SiteScreen(
                         cookies.setAcceptCookie(true)
                         cookies.setAcceptThirdPartyCookies(this, true)
                         setBackgroundColor(Color.parseColor("#07111F"))
+                        setLayerType(View.LAYER_TYPE_HARDWARE, null)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
+                        settings.databaseEnabled = true
                         settings.loadsImagesAutomatically = true
                         settings.useWideViewPort = true
                         settings.loadWithOverviewMode = false
@@ -240,7 +264,7 @@ private fun SiteScreen(
                         settings.setSupportMultipleWindows(false)
                         settings.allowFileAccess = true
                         settings.allowContentAccess = true
-                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             settings.isAlgorithmicDarkeningAllowed = false
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -257,6 +281,10 @@ private fun SiteScreen(
 
                             override fun getDefaultVideoPoster(): Bitmap {
                                 return Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
+                            }
+
+                            override fun onPermissionRequest(request: android.webkit.PermissionRequest?) {
+                                request?.grant(request.resources)
                             }
 
                             override fun onShowFileChooser(

@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">اختبار زمن الاستجابة الفعلي</string>
     <string name="title_user_asset_setting">ملفات الأصول</string>
     <string name="title_sort_by_test_results">الفرز حسب نتائج الاختبار</string>
+    <string name="acc_toggle_theme">تبديل الوضع الفاتح أو الداكن</string>
+    <string name="acc_sort_servers">فرز الخوادم</string>
+    <string name="acc_show_more_import">عرض المزيد من خيارات الاستيراد</string>
+    <string name="title_sort_by_ping">أفضل بنج</string>
+    <string name="title_sort_by_name">الاسم</string>
+    <string name="title_sort_by_newest">الأحدث</string>
+    <string name="title_sort_by_oldest">الأقدم</string>
     <string name="title_filter_config">تصفية ملف التكوين</string>
     <string name="filter_config_all">الكل</string>
     <string name="summary_scan_qrcode">انقر على الشاشة لفتح الكاميرا والمسح</string>

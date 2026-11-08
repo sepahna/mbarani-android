@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">Real gecikmələri sınaqdan keçir</string>
     <string name="title_user_asset_setting">Resurs faylları</string>
     <string name="title_sort_by_test_results">Sınaq nəticələrinə görə çeşidlə</string>
+    <string name="acc_toggle_theme">Açıq və ya tünd temanı dəyiş</string>
+    <string name="acc_sort_servers">Serverləri sırala</string>
+    <string name="acc_show_more_import">Daha çox idxal seçimini göstər</string>
+    <string name="title_sort_by_ping">Ən yaxşı ping</string>
+    <string name="title_sort_by_name">Ad</string>
+    <string name="title_sort_by_newest">Ən yeni</string>
+    <string name="title_sort_by_oldest">Ən köhnə</string>
     <string name="title_filter_config">Konfiqurasiyaları filtrdən keçir</string>
     <string name="filter_config_all">Hamısı</string>
     <string name="summary_scan_qrcode">Kameranı açmaq və skan etmək üçün ekrana toxunun</string>

@@ -1,8 +1,20 @@
 package com.v2ray.ang.ui.main
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.enums.EConfigType
@@ -10,7 +22,7 @@ import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.ui.compose.AppDropdownMenuItems
 import com.v2ray.ang.ui.compose.SelectListDialog
 
-private enum class ImportMenuAction(@StringRes val labelRes: Int, val action: MainAction) {
+internal enum class ImportMenuAction(@StringRes val labelRes: Int, val action: MainAction) {
     QRCode(R.string.menu_item_import_config_qrcode, MainAction.ImportQRcode),
     Clipboard(R.string.menu_item_import_config_clipboard, MainAction.ImportClipboard),
     AddSubscription(R.string.menu_item_add_subscription, MainAction.AddSubscription),
@@ -26,6 +38,11 @@ private enum class ImportMenuAction(@StringRes val labelRes: Int, val action: Ma
     WireGuard(R.string.menu_item_import_config_manually_wireguard, MainAction.ImportManually(EConfigType.WIREGUARD.value)),
     Hysteria2(R.string.menu_item_import_config_manually_hysteria2, MainAction.ImportManually(EConfigType.HYSTERIA2.value))
 }
+
+internal const val IMPORT_MENU_COLLAPSED_COUNT = 5
+
+internal fun importMenuVisibleActions(showAllItems: Boolean): List<ImportMenuAction> =
+    if (showAllItems) ImportMenuAction.entries else ImportMenuAction.entries.take(IMPORT_MENU_COLLAPSED_COUNT)
 
 enum class MainMoreMenuAction(@StringRes val labelRes: Int) {
     RestartService(R.string.title_service_restart),
@@ -61,11 +78,39 @@ internal fun serverMenuActions(
 }
 
 @Composable
-fun ImportMenuContent(onAction: (MainAction) -> Unit) = AppDropdownMenuItems(
-    items = ImportMenuAction.entries,
-    labelRes = { it.labelRes },
-    onSelected = { onAction(it.action) }
-)
+fun ImportMenuContent(
+    showAllItems: Boolean,
+    onShowMore: () -> Unit,
+    onAction: (MainAction) -> Unit,
+) {
+    val visible = importMenuVisibleActions(showAllItems)
+    AppDropdownMenuItems(
+        items = visible,
+        labelRes = { it.labelRes },
+        onSelected = { onAction(it.action) }
+    )
+    if (!showAllItems && ImportMenuAction.entries.size > IMPORT_MENU_COLLAPSED_COUNT) {
+        DropdownMenuItem(
+            text = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_chevron_down_24dp),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(stringResource(R.string.acc_show_more_import))
+                }
+            },
+            onClick = onShowMore
+        )
+    }
+}
 
 @Composable
 fun MoreMenuContent(onSelected: (MainMoreMenuAction) -> Unit) = AppDropdownMenuItems(

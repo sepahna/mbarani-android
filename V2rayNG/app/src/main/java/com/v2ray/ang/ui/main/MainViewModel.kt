@@ -10,6 +10,7 @@ import com.v2ray.ang.dto.ConnectionTestResult
 import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.LocateTarget
 import com.v2ray.ang.dto.RealPingResult
+import com.v2ray.ang.dto.ServerSortMode
 import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.ServersCache
@@ -298,6 +299,7 @@ class MainViewModel(
             MainAction.RemoveDuplicateServers -> removeDuplicateServerAsync()
             MainAction.RemoveInvalidServers -> removeInvalidServerAsync()
             MainAction.SortByTestResults -> sortByTestResultsAsync()
+            is MainAction.SortServers -> sortServersAsync(action.mode)
             MainAction.UpdateSubscriptions -> importConfigViaSub(uiState.value.selectedGroupId)
             is MainAction.UpdateGroupSubscription -> importConfigViaSub(action.groupId)
             MainAction.ExportAll -> exportAllAsync()
@@ -734,29 +736,33 @@ class MainViewModel(
     }
 
     private fun sortByTestResultsAsync() {
+        sortServersAsync(ServerSortMode.Ping)
+    }
+
+    private fun sortServersAsync(mode: ServerSortMode) {
         launchLoading {
             withContext(ioDispatcher) {
                 try {
-                    sortByTestResultsInternal()
+                    sortServersInternal(mode)
                     cacheMutex.withLock { groupDataCache.clear() }
                     setupGroupTab(forceRefresh = true)
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (e: Exception) {
-                    LogUtil.e(AppConfig.TAG, "Sort by test results failed", e)
+                    LogUtil.e(AppConfig.TAG, "Sort servers failed: $mode", e)
                     toastError(R.string.toast_failure)
                 }
             }
         }
     }
 
-    private fun sortByTestResultsInternal() {
+    private fun sortServersInternal(mode: ServerSortMode) {
         val subs = if (uiState.value.selectedGroupId.isEmpty()) {
             dataSource.getSubsList()
         } else {
             listOf(uiState.value.selectedGroupId)
         }
-        subs.forEach { dataSource.sortByTestResultsForSub(it) }
+        subs.forEach { dataSource.sortServersForSub(it, mode) }
     }
 
     fun focusSubscription(groupId: String) {

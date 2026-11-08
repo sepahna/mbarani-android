@@ -381,6 +381,13 @@
     <string name="title_real_ping_all_server">Test real delays</string>
     <string name="title_user_asset_setting">Asset files</string>
     <string name="title_sort_by_test_results">Sort by test results</string>
+    <string name="acc_toggle_theme">Toggle light or dark theme</string>
+    <string name="acc_sort_servers">Sort servers</string>
+    <string name="acc_show_more_import">Show more import options</string>
+    <string name="title_sort_by_ping">Best ping</string>
+    <string name="title_sort_by_name">Name</string>
+    <string name="title_sort_by_newest">Newest</string>
+    <string name="title_sort_by_oldest">Oldest</string>
     <string name="title_filter_config">Filter configs</string>
     <string name="filter_config_all">All</string>
     <string name="summary_scan_qrcode">Tap the screen to open the camera and scan</string>

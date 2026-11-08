@@ -1,5 +1,6 @@
 package com.v2ray.ang.ui.main
 
+import com.v2ray.ang.dto.ServerSortMode
 import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
@@ -44,6 +45,7 @@ interface MainDataSource : Closeable {
     fun encodeServerTestDelayMillis(guid: String, testResult: Long)
     fun clearAllTestDelayResults(guids: List<String>)
     fun sortByTestResultsForSub(subId: String)
+    fun sortServersForSub(subId: String, mode: ServerSortMode)
     fun getSubsList(): List<String>
 
     suspend fun importBatchConfig(

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.text.TextUtils
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.core.CoreConfigManager
+import com.v2ray.ang.dto.ServerSortMode
 import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.UrlContentRequest
 import com.v2ray.ang.dto.entities.ProfileItem
@@ -597,18 +598,39 @@ object AngConfigManager {
      * @param subId The subscription ID.
      */
     fun sortByTestResultsForSub(subId: String) {
+        sortServersForSub(subId, ServerSortMode.Ping)
+    }
+
+    /**
+     * Sorts servers in a subscription by ping, name, or added time.
+     */
+    fun sortServersForSub(subId: String, mode: ServerSortMode) {
         val serverList = MmkvManager.decodeServerList(subId)
         if (serverList.isEmpty()) return
 
-        val sorted = serverList
-            .map { guid ->
-                val delay =
-                    MmkvManager.decodeServerAffiliationInfo(guid)?.testDelayMillis ?: 0L
-                guid to if (delay <= 0L) Long.MAX_VALUE else delay
-            }
-            .sortedBy { it.second }
-            .map { it.first }
-            .toMutableList()
+        val sorted = when (mode) {
+            ServerSortMode.Ping -> serverList
+                .map { guid ->
+                    val delay =
+                        MmkvManager.decodeServerAffiliationInfo(guid)?.testDelayMillis ?: 0L
+                    guid to if (delay <= 0L) Long.MAX_VALUE else delay
+                }
+                .sortedBy { it.second }
+                .map { it.first }
+
+            ServerSortMode.Name -> serverList
+                .sortedWith(
+                    compareBy(String.CASE_INSENSITIVE_ORDER) {
+                        MmkvManager.decodeServerConfig(it)?.remarks.orEmpty()
+                    }
+                )
+
+            ServerSortMode.Newest -> serverList
+                .sortedByDescending { MmkvManager.decodeServerConfig(it)?.addedTime ?: 0L }
+
+            ServerSortMode.Oldest -> serverList
+                .sortedBy { MmkvManager.decodeServerConfig(it)?.addedTime ?: 0L }
+        }.toMutableList()
         MmkvManager.encodeServerList(sorted, subId)
     }
 

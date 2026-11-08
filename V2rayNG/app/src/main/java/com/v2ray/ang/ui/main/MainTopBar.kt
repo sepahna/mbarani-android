@@ -3,12 +3,14 @@ package com.v2ray.ang.ui.main
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.DropdownMenu
@@ -32,7 +34,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.dto.ServerSortMode
+import com.v2ray.ang.ui.compose.AppDropdownMenuItems
 import com.v2ray.ang.ui.compose.AppTopBar
+import com.v2ray.ang.ui.compose.LocalDarkTheme
+import com.v2ray.ang.ui.compose.ThemeManager
 import com.v2ray.ang.ui.compose.verticalScrollbar
 
 @Composable
@@ -48,14 +54,18 @@ fun MainTopBar(
     onMoreMenuAction: (MainMoreMenuAction) -> Unit
 ) {
     var showImportMenu by remember { mutableStateOf(false) }
+    var importMenuExpanded by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
     val importMenuScrollState = rememberScrollState()
     val moreMenuScrollState = rememberScrollState()
+    val sortMenuScrollState = rememberScrollState()
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val maxMenuHeight = LocalConfiguration.current.screenHeightDp.dp - statusBarHeight - navBarHeight - 20.dp
     val channelTitle = stringResource(R.string.title_site_channel)
     val buyTitle = stringResource(R.string.title_site_buy)
+    val isDarkTheme = LocalDarkTheme.current
 
     AppTopBar(
         title = "",
@@ -72,14 +82,62 @@ fun MainTopBar(
                     Icon(painterResource(R.drawable.ic_arrow_back_24dp), contentDescription = stringResource(R.string.acc_back))
                 }
             } else {
-                IconButton(onClick = onMenuClick) {
-                    Icon(painterResource(R.drawable.ic_menu_24dp), contentDescription = stringResource(R.string.acc_open_menu))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onMenuClick) {
+                        Icon(
+                            painterResource(R.drawable.ic_menu_24dp),
+                            contentDescription = stringResource(R.string.acc_open_menu)
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            ThemeManager.setThemeMode(if (isDarkTheme) "1" else "2")
+                        }
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.ic_moon_24dp),
+                            contentDescription = stringResource(R.string.acc_toggle_theme)
+                        )
+                    }
+                    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+                        IconButton(onClick = { showSortMenu = true }) {
+                            Icon(
+                                painterResource(R.drawable.ic_sort_24dp),
+                                contentDescription = stringResource(R.string.acc_sort_servers)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false },
+                            scrollState = sortMenuScrollState,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier
+                                .widthIn(min = 220.dp)
+                                .heightIn(max = maxMenuHeight)
+                                .verticalScrollbar(sortMenuScrollState)
+                        ) {
+                            AppDropdownMenuItems(
+                                items = ServerSortMode.entries,
+                                labelRes = { mode ->
+                                    when (mode) {
+                                        ServerSortMode.Ping -> R.string.title_sort_by_ping
+                                        ServerSortMode.Name -> R.string.title_sort_by_name
+                                        ServerSortMode.Newest -> R.string.title_sort_by_newest
+                                        ServerSortMode.Oldest -> R.string.title_sort_by_oldest
+                                    }
+                                },
+                                onSelected = { mode ->
+                                    showSortMenu = false
+                                    onAction(MainAction.SortServers(mode))
+                                }
+                            )
+                        }
+                    }
                 }
             }
         },
         actions = {
             if (!showSearch) {
-                // Order: more, add, channel, buy, search, gauge (real-delay test for current group).
                 Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                     BarIcon(R.drawable.ic_more_vert_24dp, stringResource(R.string.acc_more)) {
                         showMenu = true
@@ -90,6 +148,7 @@ fun MainTopBar(
                         scrollState = moreMenuScrollState,
                         containerColor = MaterialTheme.colorScheme.surface,
                         modifier = Modifier
+                            .widthIn(min = 240.dp)
                             .heightIn(max = maxMenuHeight)
                             .verticalScrollbar(moreMenuScrollState)
                     ) {
@@ -101,20 +160,28 @@ fun MainTopBar(
                 }
                 Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                     BarIcon(R.drawable.ic_add_24dp, stringResource(R.string.acc_add)) {
+                        importMenuExpanded = false
                         showImportMenu = true
                     }
                     DropdownMenu(
                         expanded = showImportMenu,
-                        onDismissRequest = { showImportMenu = false },
+                        onDismissRequest = {
+                            showImportMenu = false
+                            importMenuExpanded = false
+                        },
                         scrollState = importMenuScrollState,
                         containerColor = MaterialTheme.colorScheme.surface,
                         modifier = Modifier
+                            .widthIn(min = 280.dp)
                             .heightIn(max = maxMenuHeight)
                             .verticalScrollbar(importMenuScrollState)
                     ) {
                         ImportMenuContent(
+                            showAllItems = importMenuExpanded,
+                            onShowMore = { importMenuExpanded = true },
                             onAction = { action ->
                                 showImportMenu = false
+                                importMenuExpanded = false
                                 onAction(action)
                             }
                         )

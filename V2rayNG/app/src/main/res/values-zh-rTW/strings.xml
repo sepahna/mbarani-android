@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">測試真連接延遲</string>
     <string name="title_user_asset_setting">資源檔案</string>
     <string name="title_sort_by_test_results">依測試結果排序</string>
+    <string name="acc_toggle_theme">切換淺色或深色主題</string>
+    <string name="acc_sort_servers">排序伺服器</string>
+    <string name="acc_show_more_import">顯示更多匯入選項</string>
+    <string name="title_sort_by_ping">依延遲</string>
+    <string name="title_sort_by_name">依名稱</string>
+    <string name="title_sort_by_newest">最新</string>
+    <string name="title_sort_by_oldest">最舊</string>
     <string name="title_filter_config">篩選設定</string>
     <string name="filter_config_all">所有</string>
     <string name="summary_scan_qrcode">點一下螢幕以開啟相機並掃描</string>

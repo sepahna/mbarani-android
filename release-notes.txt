@@ -1,7 +1,9 @@
 تغییرات این نسخه
-- پینگ خودکار هنگام باز شدن برنامه و عوض کردن دسته حذف شد.
-- تست فقط با آیکن سرعت هر کانفیگ یا آیکن کیلومتر بالای صفحه انجام می‌شود.
+- کنار منوی اصلی، تغییر تم روشن/تاریک و مرتب‌سازی (پینگ، نام، جدیدترین، قدیمی‌ترین) اضافه شد.
+- منوی + اول ۵ گزینه را نشان می‌دهد و با فلش پایین بقیه باز می‌شود.
+- در دسترسی سریع، آیکن خانه و برگشت به‌روز شد و پخش ویدیو بهبود یافت.
 
 What's new
-- Removed automatic ping on app open and group switch.
-- Delay tests run only from each config’s speed button or the top-bar gauge icon.
+- Added theme toggle and sort controls next to the main menu (ping, name, newest, oldest).
+- The + menu now shows five items first, with a chevron to reveal the rest.
+- Quick Access home/back icons were updated and video playback was improved.

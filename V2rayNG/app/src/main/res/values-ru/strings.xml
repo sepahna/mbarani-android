@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">Проверить реальную задержку</string>
     <string name="title_user_asset_setting">Файлы ресурсов</string>
     <string name="title_sort_by_test_results">Сортировать по результатам теста</string>
+    <string name="acc_toggle_theme">Переключить светлую или тёмную тему</string>
+    <string name="acc_sort_servers">Сортировать серверы</string>
+    <string name="acc_show_more_import">Показать больше вариантов импорта</string>
+    <string name="title_sort_by_ping">Лучший пинг</string>
+    <string name="title_sort_by_name">Имя</string>
+    <string name="title_sort_by_newest">Сначала новые</string>
+    <string name="title_sort_by_oldest">Сначала старые</string>
     <string name="title_filter_config">Фильтр профилей</string>
     <string name="filter_config_all">Все</string>
     <string name="summary_scan_qrcode">Нажмите на экран, чтобы открыть камеру для сканирования</string>

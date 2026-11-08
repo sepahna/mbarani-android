@@ -352,6 +352,13 @@
     <string name="title_real_ping_all_server">آزمایش تئخیر واقعی</string>
     <string name="title_user_asset_setting">فایلا بونچک جوقرافیایی</string>
     <string name="title_sort_by_test_results">ترتیب و ری نتیجه یل پینگ</string>
+    <string name="acc_toggle_theme">آلشت هالت روشن یا تاریک</string>
+    <string name="acc_sort_servers">مرتب کردن سروریا</string>
+    <string name="acc_show_more_import">نیشون دایئن گزینه‌یل بیشتر</string>
+    <string name="title_sort_by_ping">پینگ بهتر</string>
+    <string name="title_sort_by_name">نوم</string>
+    <string name="title_sort_by_newest">تازه‌تر</string>
+    <string name="title_sort_by_oldest">کوهنه‌تر</string>
     <string name="title_filter_config">فیلتر کردن کانفیگا</string>
     <string name="filter_config_all">پوی</string>
     <string name="summary_scan_qrcode">سی گۊشیڌن شؽواتگر وو اسکن، و ری بلگه بزنین</string>
