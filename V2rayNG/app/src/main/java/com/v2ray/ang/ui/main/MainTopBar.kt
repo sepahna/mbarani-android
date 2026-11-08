@@ -174,7 +174,7 @@ fun MainTopBar(
                         scrollState = importMenuScrollState,
                         containerColor = MaterialTheme.colorScheme.surface,
                         modifier = Modifier
-                            .widthIn(min = 300.dp)
+                            .widthIn(min = 320.dp)
                             .heightIn(max = maxMenuHeight)
                             .verticalScrollbar(importMenuScrollState)
                     ) {

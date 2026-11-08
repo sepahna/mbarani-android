@@ -96,13 +96,19 @@ class QuickAccessActivity : BaseComponentActivity() {
         if (url.isBlank()) return
         val open = {
             val uri = Uri.parse(url)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, guessVideoMime(url))
+            val mime = guessVideoMime(url)
+            val view = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mime)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            runCatching { startActivity(intent) }.recoverCatching {
-                startActivity(Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            val fallback = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            runCatching {
+                startActivity(Intent.createChooser(view, getString(R.string.title_site_video)))
+            }.recoverCatching {
+                startActivity(Intent.createChooser(fallback, getString(R.string.title_site_video)))
+            }.recoverCatching {
+                startActivity(fallback)
             }
             Unit
         }
@@ -143,8 +149,9 @@ private fun guessVideoMime(url: String): String {
     return when {
         path.endsWith(".mp4") || path.endsWith(".m4v") -> "video/mp4"
         path.endsWith(".webm") -> "video/webm"
-        path.endsWith(".mov") || path.endsWith(".qt") -> "video/quicktime"
-        path.endsWith(".mkv") -> "video/x-matroska"
+        // Many Android players reject video/quicktime even when they can play the file.
+        path.endsWith(".mov") || path.endsWith(".qt") -> "video/*"
+        path.endsWith(".mkv") -> "video/*"
         else -> "video/*"
     }
 }
@@ -171,6 +178,10 @@ private const val SITE_FIX_SCRIPT = """
     return /\.(mov|qt|avi|wmv|flv|mkv)(\?|#|$)/i.test(url || '');
   }
 
+  function isModalVideo(v){
+    return !!(v.closest('[class*="fixed inset-0"]') || v.closest('[class*="z-[120]"]'));
+  }
+
   function openExternal(url){
     if (!url || !window.MbaraniApp || !window.MbaraniApp.openMedia) return false;
     try { window.MbaraniApp.openMedia(url); return true; } catch (_) { return false; }
@@ -182,27 +193,38 @@ private const val SITE_FIX_SCRIPT = """
     v.setAttribute('playsinline','');
     v.setAttribute('webkit-playsinline','');
     v.playsInline = true;
-    if (!v.getAttribute('controls')) {
+
+    var url = mediaUrl(v);
+    var modal = isModalVideo(v);
+
+    if (needsExternal(url)) {
+      var open = function(e){
+        if (e) {
+          try { e.preventDefault(); e.stopPropagation(); } catch (_) {}
+        }
+        try { v.pause(); } catch (_) {}
+        openExternal(mediaUrl(v) || url);
+      };
+      v.addEventListener('play', open, true);
+      v.addEventListener('click', open, true);
+      v.addEventListener('error', open, true);
+      // Fullscreen player for .mov cannot play inside Android WebView.
+      if (modal) {
+        setTimeout(function(){ open(null); }, 50);
+      }
+      return;
+    }
+
+    if (modal) {
       v.setAttribute('controls','controls');
       v.controls = true;
     }
-
-    var openIfNeeded = function(){
-      var url = mediaUrl(v);
-      if (needsExternal(url)) {
-        openExternal(url);
-        try { v.pause(); } catch (_) {}
-        return true;
-      }
-      return false;
-    };
 
     v.addEventListener('error', function(){
       openExternal(mediaUrl(v));
     });
 
     v.addEventListener('play', function(){
-      if (openIfNeeded()) return;
       if (v.readyState < 2) {
         setTimeout(function(){
           if (v.paused) return;
@@ -213,23 +235,16 @@ private const val SITE_FIX_SCRIPT = """
       }
     }, true);
 
-    v.addEventListener('click', function(){
-      var url = mediaUrl(v);
-      if (needsExternal(url)) {
-        openExternal(url);
-        return;
-      }
+    if (modal) {
       try {
-        if (v.paused) {
-          var p = v.play();
-          if (p && p.catch) {
-            p.catch(function(){ openExternal(url); });
-          }
+        var p = v.play();
+        if (p && p.catch) {
+          p.catch(function(){ openExternal(mediaUrl(v)); });
         }
       } catch (_) {
-        openExternal(url);
+        openExternal(mediaUrl(v));
       }
-    });
+    }
   }
 
   function unlockMedia(){

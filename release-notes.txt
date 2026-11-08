@@ -1,11 +1,7 @@
 تغییرات این نسخه
-- کنار منوی اصلی، تغییر تم روشن/تاریک و مرتب‌سازی (پینگ بهتر، نام، جدیدترین، قدیمی‌ترین) اضافه شد.
-- منوی + اول ۵ گزینه را نشان می‌دهد و با فلش پایین بقیه باز می‌شود؛ فاصله آیتم‌ها بهتر شد.
-- در دسترسی سریع، آیکن خانه و برگشت به‌روز شد و پخش ویدیوهای MOV با پلیر خارجی باز می‌شود.
-- بیلد CI برای دانلود Gradle و libv2ray مقاوم‌تر شد.
+- پخش ویدیوهای .mov در دسترسی سریع: چون WebView اندروید پشتیبانی نمی‌کند، با پلیر خارجی باز می‌شوند.
+- منوی + کمی عریض‌تر شد (۵ مورد اول + نمایش بیشتر).
 
 What's new
-- Added theme toggle and sort controls next to the main menu (best ping, name, newest, oldest).
-- The + menu shows five items first, with a chevron for the rest and clearer spacing.
-- Quick Access home/back icons were updated; QuickTime/MOV videos open in an external player.
-- Hardened APK CI downloads for Gradle and libv2ray.
+- Quick Access now opens unsupported .mov videos in an external player.
+- Slightly wider + import menu (first five items, then expand).
