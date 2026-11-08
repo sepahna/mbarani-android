@@ -8,9 +8,13 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -88,6 +92,27 @@ class QuickAccessActivity : BaseComponentActivity() {
         }
     }
 
+    fun openMediaExternally(url: String) {
+        if (url.isBlank()) return
+        val open = {
+            val uri = Uri.parse(url)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, guessVideoMime(url))
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            runCatching { startActivity(intent) }.recoverCatching {
+                startActivity(Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+            Unit
+        }
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            open()
+        } else {
+            Handler(Looper.getMainLooper()).post(open)
+        }
+    }
+
     @Composable
     override fun ScreenContent() {
         val requested = intent.getStringExtra(EXTRA_URL).orEmpty()
@@ -102,13 +127,25 @@ class QuickAccessActivity : BaseComponentActivity() {
             startUrl = startUrl,
             title = title,
             onBackClick = { finish() },
-            onHomeClick = { finish() }
+            onHomeClick = { finish() },
+            onOpenMedia = ::openMediaExternally
         )
     }
 
     companion object {
         const val EXTRA_URL = "extra_url"
         const val EXTRA_TITLE = "extra_title"
+    }
+}
+
+private fun guessVideoMime(url: String): String {
+    val path = Uri.parse(url).path.orEmpty().lowercase()
+    return when {
+        path.endsWith(".mp4") || path.endsWith(".m4v") -> "video/mp4"
+        path.endsWith(".webm") -> "video/webm"
+        path.endsWith(".mov") || path.endsWith(".qt") -> "video/quicktime"
+        path.endsWith(".mkv") -> "video/x-matroska"
+        else -> "video/*"
     }
 }
 
@@ -125,21 +162,76 @@ private const val SITE_FIX_SCRIPT = """
     '[class*="92dvh"]{max-height:min(92vh,40rem)}'
   ].join('');
   document.documentElement.appendChild(css);
+
+  function mediaUrl(v){
+    return (v.currentSrc || v.src || '').trim();
+  }
+
+  function needsExternal(url){
+    return /\.(mov|qt|avi|wmv|flv|mkv)(\?|#|$)/i.test(url || '');
+  }
+
+  function openExternal(url){
+    if (!url || !window.MbaraniApp || !window.MbaraniApp.openMedia) return false;
+    try { window.MbaraniApp.openMedia(url); return true; } catch (_) { return false; }
+  }
+
   function mark(v){
     if (!v || v.dataset.mbInline) return;
     v.dataset.mbInline = '1';
     v.setAttribute('playsinline','');
     v.setAttribute('webkit-playsinline','');
-    v.setAttribute('controls','controls');
     v.playsInline = true;
-    v.controls = true;
-    v.addEventListener('click', function(e){
-      try {
-        if (v.paused) { v.play(); } else { v.pause(); }
-      } catch (_) {}
-      e.stopPropagation();
+    if (!v.getAttribute('controls')) {
+      v.setAttribute('controls','controls');
+      v.controls = true;
+    }
+
+    var openIfNeeded = function(){
+      var url = mediaUrl(v);
+      if (needsExternal(url)) {
+        openExternal(url);
+        try { v.pause(); } catch (_) {}
+        return true;
+      }
+      return false;
+    };
+
+    v.addEventListener('error', function(){
+      openExternal(mediaUrl(v));
+    });
+
+    v.addEventListener('play', function(){
+      if (openIfNeeded()) return;
+      if (v.readyState < 2) {
+        setTimeout(function(){
+          if (v.paused) return;
+          if (v.currentTime < 0.05 && v.readyState < 2) {
+            openExternal(mediaUrl(v));
+          }
+        }, 1200);
+      }
     }, true);
+
+    v.addEventListener('click', function(){
+      var url = mediaUrl(v);
+      if (needsExternal(url)) {
+        openExternal(url);
+        return;
+      }
+      try {
+        if (v.paused) {
+          var p = v.play();
+          if (p && p.catch) {
+            p.catch(function(){ openExternal(url); });
+          }
+        }
+      } catch (_) {
+        openExternal(url);
+      }
+    });
   }
+
   function unlockMedia(){
     document.querySelectorAll('video').forEach(mark);
     document.querySelectorAll('iframe').forEach(function(frame){
@@ -188,13 +280,26 @@ private fun downloadLegacyCss(url: String): ByteArray? {
     }
 }
 
+private class SiteJsBridge(
+    private val onOpenMedia: (String) -> Unit
+) {
+    @JavascriptInterface
+    fun openMedia(url: String?) {
+        val target = url?.trim().orEmpty()
+        if (target.startsWith("https://") || target.startsWith("http://")) {
+            onOpenMedia(target)
+        }
+    }
+}
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 private fun SiteScreen(
     startUrl: String,
     title: String,
     onBackClick: () -> Unit,
-    onHomeClick: () -> Unit
+    onHomeClick: () -> Unit,
+    onOpenMedia: (String) -> Unit
 ) {
     var progress by remember { mutableIntStateOf(0) }
     var webView by remember { mutableStateOf<WebView?>(null) }
@@ -271,6 +376,7 @@ private fun SiteScreen(
                             @Suppress("DEPRECATION")
                             settings.forceDark = WebSettings.FORCE_DARK_OFF
                         }
+                        addJavascriptInterface(SiteJsBridge(onOpenMedia), "MbaraniApp")
                         webChromeClient = object : WebChromeClient() {
                             private var customView: View? = null
                             private var customCallback: CustomViewCallback? = null
@@ -283,7 +389,7 @@ private fun SiteScreen(
                                 return Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
                             }
 
-                            override fun onPermissionRequest(request: android.webkit.PermissionRequest?) {
+                            override fun onPermissionRequest(request: PermissionRequest?) {
                                 request?.grant(request.resources)
                             }
 
@@ -337,6 +443,11 @@ private fun SiteScreen(
                                 view: WebView,
                                 request: WebResourceRequest
                             ): Boolean {
+                                val target = request.url?.toString().orEmpty()
+                                if (QuickAccessVideo.shouldOpenExternally(target)) {
+                                    onOpenMedia(target)
+                                    return true
+                                }
                                 val scheme = request.url.scheme.orEmpty()
                                 if (scheme == "http" || scheme == "https") return false
                                 runCatching {

@@ -539,6 +539,7 @@
     <string name="acc_add_rule">添加路由规则</string>
     <string name="acc_start">启动服务</string>
     <string name="acc_stop">停止服务</string>
+    <string name="acc_home">主页</string>
     <string name="acc_back">返回</string>
     <string name="acc_search">搜索</string>
     <string name="acc_add">添加配置</string>

@@ -40,32 +40,49 @@ jobs:
       - name: Copy hev libraries
         run: cp -a libs V2rayNG/app/
 
-      - name: Download libv2ray
+      - name: Install libv2ray
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          ROOT="$(pwd)"
-          SUB="$ROOT/AndroidLibXrayLite"
-          git submodule update --init --recursive --depth 1 AndroidLibXrayLite
-          TOP="$(git -C "$SUB" rev-parse --show-toplevel)"
-          if [ "$TOP" = "$ROOT" ]; then
-            echo "AndroidLibXrayLite submodule checkout is missing"
-            exit 1
-          fi
-          git -C "$SUB" fetch --tags --force
-          TAG="$(git -C "$SUB" describe --tags --exact-match HEAD 2>/dev/null || true)"
-          if [ -z "$TAG" ]; then
-            TAG="$(git -C "$SUB" tag --list 'v2[0-9].*' --sort=-v:refname | head -1)"
-          fi
-          if [ -z "$TAG" ]; then
-            TAG="v26.10.31"
-          fi
-          echo "libv2ray tag: $TAG"
           mkdir -p V2rayNG/app/libs
-          URL="https://github.com/2dust/AndroidLibXrayLite/releases/download/${TAG}/libv2ray.aar"
-          echo "Downloading $URL"
-          curl -fL --retry 10 --retry-all-errors --retry-delay 5 \
-            -o V2rayNG/app/libs/libv2ray.aar \
-            "$URL"
+          DEST="V2rayNG/app/libs/libv2ray.aar"
+          if [ -f ci/deps/libv2ray.aar ]; then
+            echo "Using vendored ci/deps/libv2ray.aar"
+            cp -f ci/deps/libv2ray.aar "$DEST"
+          else
+            git -C AndroidLibXrayLite fetch --tags --force || true
+            TAG="$(git -C AndroidLibXrayLite describe --tags --abbrev=0 2>/dev/null || echo v26.10.31)"
+            echo "libv2ray tag: $TAG"
+            ASSET_ID="$(gh api "repos/2dust/AndroidLibXrayLite/releases/tags/${TAG}" \
+              --jq '.assets[] | select(.name=="libv2ray.aar") | .id')"
+            if [ -n "$ASSET_ID" ]; then
+              echo "Downloading asset id ${ASSET_ID} via GitHub API"
+              for attempt in 1 2 3 4 5 6 7 8; do
+                if gh api -H "Accept: application/octet-stream" \
+                  "repos/2dust/AndroidLibXrayLite/releases/assets/${ASSET_ID}" > "$DEST" \
+                  && [ -s "$DEST" ]; then
+                  break
+                fi
+                echo "API download attempt ${attempt} failed"
+                rm -f "$DEST"
+                sleep $((attempt * 8))
+              done
+            fi
+            if [ ! -s "$DEST" ]; then
+              echo "Falling back to browser download URL"
+              curl -fL --retry 10 --retry-all-errors --retry-delay 8 \
+                -o "$DEST" \
+                "https://github.com/2dust/AndroidLibXrayLite/releases/download/${TAG}/libv2ray.aar"
+            fi
+          fi
+          python3 - <<'PY'
+          import zipfile, sys
+          path = "V2rayNG/app/libs/libv2ray.aar"
+          if not zipfile.is_zipfile(path):
+              raise SystemExit(f"invalid aar: {path}")
+          print("libv2ray.aar ok", zipfile.ZipFile(path).namelist()[:5])
+          PY
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -81,20 +98,15 @@ jobs:
         run: |
           set -euo pipefail
           chmod 755 gradlew
-          TMP_ZIP="${RUNNER_TEMP}/gradle-9.8.2-bin.zip"
+          # Prefer a mirror that does not redirect through GitHub Releases.
+          sed -i 's|https\\://services.gradle.org/distributions/|https\\://mirrors.cloud.tencent.com/gradle/|' \
+            gradle/wrapper/gradle-wrapper.properties
           for attempt in 1 2 3 4 5 6 7 8; do
             echo "Gradle bootstrap attempt ${attempt}"
-            rm -f "$TMP_ZIP" || true
-            if curl -fL --retry 8 --retry-all-errors --retry-delay 5 \
-              -o "$TMP_ZIP" \
-              "https://services.gradle.org/distributions/gradle-9.8.2-bin.zip"; then
-              # Point the wrapper at the local zip so Java URLConnection 504 is avoided.
-              sed -i "s|^distributionUrl=.*|distributionUrl=file\\:${TMP_ZIP}|" \
-                gradle/wrapper/gradle-wrapper.properties
-              if ./gradlew --version; then
-                exit 0
-              fi
+            if ./gradlew --version; then
+              exit 0
             fi
+            rm -rf "${HOME}/.gradle/wrapper/dists/gradle-9.8.2-bin" || true
             sleep $((attempt * 8))
           done
           echo "Failed to download Gradle after retries"

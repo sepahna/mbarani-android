@@ -95,7 +95,9 @@ fun MainTopBar(
                         }
                     ) {
                         Icon(
-                            painterResource(R.drawable.ic_moon_24dp),
+                            painterResource(
+                                if (isDarkTheme) R.drawable.ic_sun_24dp else R.drawable.ic_moon_24dp
+                            ),
                             contentDescription = stringResource(R.string.acc_toggle_theme)
                         )
                     }
@@ -172,7 +174,7 @@ fun MainTopBar(
                         scrollState = importMenuScrollState,
                         containerColor = MaterialTheme.colorScheme.surface,
                         modifier = Modifier
-                            .widthIn(min = 280.dp)
+                            .widthIn(min = 300.dp)
                             .heightIn(max = maxMenuHeight)
                             .verticalScrollbar(importMenuScrollState)
                     ) {

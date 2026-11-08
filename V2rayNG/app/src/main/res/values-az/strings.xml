@@ -541,6 +541,7 @@
     <string name="acc_add_rule">Marşrutlaşdırma qaydası əlavə et</string>
     <string name="acc_start">Xidməti başlat</string>
     <string name="acc_stop">Xidməti dayandır</string>
+    <string name="acc_home">Ana səhifə</string>
     <string name="acc_back">Geri</string>
     <string name="acc_search">Axtar</string>
     <string name="acc_add">Konfiqurasiya əlavə et</string>
