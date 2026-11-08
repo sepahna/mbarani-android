@@ -1,9 +1,7 @@
 تغییرات این نسخه
-- نوار بالا مرتب شد: منو، افزودن، کانال، خرید، جستجو و تست تأخیر واقعی (آیکن کیلومتر).
-- آیکن‌های خرید، جستجو، کانال و تست سرعت به‌روز شدند؛ تیکت و ویدیو از نوار بالا حذف شدند.
-- پینگ خودکار سبک‌تر شد (TCP) تا تعویض دسته روان‌تر باشد؛ پینگ واقعی از آیکن کیلومتر یا منو.
+- پینگ خودکار هنگام باز شدن برنامه و عوض کردن دسته حذف شد.
+- تست فقط با آیکن سرعت هر کانفیگ یا آیکن کیلومتر بالای صفحه انجام می‌شود.
 
 What's new
-- Reordered the top bar: more, add, channel, buy, search, and a gauge that runs real-delay tests for the current group.
-- Updated Lucide-style buy/search/gauge icons and the channel icon; removed ticket and video from the top bar.
-- Softened automatic reachability checks to lightweight TCP; full real delay stays manual.
+- Removed automatic ping on app open and group switch.
+- Delay tests run only from each config’s speed button or the top-bar gauge icon.
