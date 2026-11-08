@@ -37,36 +37,48 @@ object ApkUpdateInstaller {
             .followRedirects(true)
             .followSslRedirects(true)
             .build()
-        val request = Request.Builder().url(url).build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                error("HTTP ${response.code}")
-            }
-            val body = response.body
-            val total = body.contentLength()
-            val file = File(context.cacheDir, "barani-update.apk")
-            body.byteStream().use { input ->
-                file.outputStream().use { output ->
-                    val buffer = ByteArray(16 * 1024)
-                    var received = 0L
-                    while (true) {
-                        coroutineContext.ensureActive()
-                        val read = input.read(buffer)
-                        if (read < 0) break
-                        output.write(buffer, 0, read)
-                        received += read
-                        withContext(Dispatchers.Main) {
-                            onProgress(received, total)
+        val file = File(context.cacheDir, "barani-update.apk")
+        var lastError: Exception? = null
+        for (candidate in ApkDownloadMirrors.candidates(url)) {
+            try {
+                val request = Request.Builder()
+                    .url(candidate)
+                    .header("User-Agent", "mbarani-android-updater")
+                    .build()
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        error("HTTP ${response.code}")
+                    }
+                    val body = response.body
+                    val total = body.contentLength()
+                    body.byteStream().use { input ->
+                        file.outputStream().use { output ->
+                            val buffer = ByteArray(16 * 1024)
+                            var received = 0L
+                            while (true) {
+                                coroutineContext.ensureActive()
+                                val read = input.read(buffer)
+                                if (read < 0) break
+                                output.write(buffer, 0, read)
+                                received += read
+                                withContext(Dispatchers.Main) {
+                                    onProgress(received, total)
+                                }
+                            }
                         }
                     }
+                    if (file.length() < 1024) {
+                        file.delete()
+                        error("Downloaded file is empty")
+                    }
+                    return@withContext file
                 }
+            } catch (error: Exception) {
+                lastError = error
+                if (file.exists()) file.delete()
             }
-            if (file.length() < 1024) {
-                file.delete()
-                error("Downloaded file is empty")
-            }
-            file
         }
+        throw lastError ?: IllegalStateException("Download failed")
     }
 
     fun canInstallPackages(context: Context): Boolean {

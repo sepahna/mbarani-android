@@ -1,7 +1,7 @@
 تغییرات این نسخه
-- پخش ویدیوهای .mov در دسترسی سریع: چون WebView اندروید پشتیبانی نمی‌کند، با پلیر خارجی باز می‌شوند.
-- منوی + کمی عریض‌تر شد (۵ مورد اول + نمایش بیشتر).
+- بررسی آپدیت دیگر فقط به GitHub API وابسته نیست: ابتدا فید سایت/CDN خوانده می‌شود و پاسخ HTML/۵۰۴ به‌عنوان «بدون آپدیت» رد نمی‌شود.
+- دانلود APK در صورت قطعی GitHub از چند آینه امتحان می‌شود.
 
 What's new
-- Quick Access now opens unsupported .mov videos in an external player.
-- Slightly wider + import menu (first five items, then expand).
+- Update checks prefer the site/CDN feed so GitHub 504/HTML no longer hides new releases.
+- APK downloads fall back through GitHub mirrors when the primary host times out.

@@ -3,6 +3,7 @@ package com.v2ray.ang.handler
 import android.os.Build
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.BuildConfig
+import com.v2ray.ang.dto.AppUpdateFeed
 import com.v2ray.ang.dto.CheckUpdateResult
 import com.v2ray.ang.dto.GitHubRelease
 import com.v2ray.ang.dto.UrlContentRequest
@@ -14,70 +15,137 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object UpdateCheckerManager {
-    suspend fun checkForUpdate(includePreRelease: Boolean = false): CheckUpdateResult = withContext(Dispatchers.IO) {
-        val url = if (includePreRelease) {
-            AppConfig.APP_API_URL
-        } else {
-            AppConfig.APP_API_URL.concatUrl("latest")
+    suspend fun checkForUpdate(includePreRelease: Boolean = false): CheckUpdateResult =
+        withContext(Dispatchers.IO) {
+            val currentVersion = versionParts(BuildConfig.VERSION_NAME)
+                ?: return@withContext CheckUpdateResult(hasUpdate = false)
+
+            val feedErrors = mutableListOf<String>()
+            for (url in feedUrls(includePreRelease)) {
+                try {
+                    val body = fetchText(url) ?: continue
+                    if (AppUpdateFeedParser.looksLikeHtml(body)) {
+                        feedErrors += "$url returned HTML"
+                        continue
+                    }
+                    val fromSite = AppUpdateFeedParser.parse(body)
+                    if (fromSite != null) {
+                        return@withContext toResult(fromSite, currentVersion)
+                    }
+                    val fromGitHub = parseGitHubRelease(body, includePreRelease)
+                    if (fromGitHub != null) {
+                        return@withContext toResult(fromGitHub, currentVersion)
+                    }
+                    feedErrors += "$url: unrecognized update payload"
+                } catch (error: Exception) {
+                    feedErrors += "$url: ${error.message}"
+                    LogUtil.e(AppConfig.TAG, "Update check failed for $url", error)
+                }
+            }
+
+            throw IllegalStateException(
+                feedErrors.lastOrNull() ?: "Failed to check for updates"
+            )
         }
 
-        val proxyUsername = SettingsManager.getSocksUsername()
-        val proxyPassword = SettingsManager.getSocksPassword()
-
-        var response = HttpUtil.getUrlContent(
-            UrlContentRequest(
-                url = url,
-                timeout = 5000
-            )
+    private fun feedUrls(includePreRelease: Boolean): List<String> {
+        val urls = linkedSetOf(
+            AppConfig.APP_UPDATE_FEED_URL,
+            AppConfig.APP_UPDATE_CDN_URL,
+            AppConfig.APP_UPDATE_RAW_URL,
         )
-        if (response.isNullOrEmpty()) {
-            val httpPort = SettingsManager.getHttpPort()
-            response = HttpUtil.getUrlContent(
-                UrlContentRequest(
-                    url = url,
-                    timeout = 5000,
-                    httpPort = httpPort,
-                    proxyUsername = proxyUsername,
-                    proxyPassword = proxyPassword
-                )
-            )
-                ?: throw IllegalStateException("Failed to get response")
-        }
-
-        val latestRelease = if (includePreRelease) {
-            JsonUtil.fromJsonSafe(response, Array<GitHubRelease>::class.java)
-                ?.firstOrNull()
-                ?: throw IllegalStateException("No pre-release found")
+        if (includePreRelease) {
+            urls += AppConfig.APP_API_URL
         } else {
-            JsonUtil.fromJsonSafe(response, GitHubRelease::class.java)
+            urls += AppConfig.APP_API_URL.concatUrl("latest")
         }
-        if (latestRelease == null) {
-            return@withContext CheckUpdateResult(hasUpdate = false)
-        }
-
-        val latestVersion = latestRelease.tagName.removePrefix("v")
-        LogUtil.i(
-            AppConfig.TAG,
-            "Found new version: $latestVersion (current: ${BuildConfig.VERSION_NAME})"
-        )
-
-        val comparableVersion = versionParts(latestVersion) ?: return@withContext CheckUpdateResult(hasUpdate = false)
-        val currentVersion = versionParts(BuildConfig.VERSION_NAME) ?: return@withContext CheckUpdateResult(hasUpdate = false)
-        return@withContext if (compareVersions(comparableVersion, currentVersion) > 0) {
-            val downloadUrl = getDownloadUrl(latestRelease, Build.SUPPORTED_ABIS[0])
-            CheckUpdateResult(
-                hasUpdate = true,
-                latestVersion = latestVersion,
-                releaseNotes = latestRelease.body,
-                downloadUrl = downloadUrl,
-                isPreRelease = latestRelease.prerelease
-            )
-        } else {
-            CheckUpdateResult(hasUpdate = false)
-        }
+        return urls.toList()
     }
 
-    private fun versionParts(raw: String): List<Int>? {
+    private fun fetchText(url: String): String? {
+        val direct = HttpUtil.getUrlContent(
+            UrlContentRequest(url = url, timeout = 12_000)
+        )
+        if (!direct.isNullOrBlank()) return direct
+
+        val httpPort = SettingsManager.getHttpPort()
+        if (httpPort == 0) return null
+        return HttpUtil.getUrlContent(
+            UrlContentRequest(
+                url = url,
+                timeout = 12_000,
+                httpPort = httpPort,
+                proxyUsername = SettingsManager.getSocksUsername(),
+                proxyPassword = SettingsManager.getSocksPassword(),
+            )
+        )
+    }
+
+    private fun parseGitHubRelease(body: String, includePreRelease: Boolean): AppUpdateFeed? {
+        val release = if (includePreRelease) {
+            JsonUtil.fromJsonSafe(body, Array<GitHubRelease>::class.java)?.firstOrNull()
+        } else {
+            JsonUtil.fromJsonSafe(body, GitHubRelease::class.java)
+        } ?: return null
+
+        val version = release.tagName.removePrefix("v").trim()
+        if (version.isEmpty()) return null
+        val apk = resolveDownloadUrl(release, Build.SUPPORTED_ABIS.firstOrNull().orEmpty())
+            ?: return null
+        return AppUpdateFeed(
+            version = version,
+            apk = apk,
+            notes = release.body,
+        )
+    }
+
+    private fun toResult(feed: AppUpdateFeed, currentVersion: List<Int>): CheckUpdateResult {
+        val latestVersion = feed.version.removePrefix("v").trim()
+        LogUtil.i(
+            AppConfig.TAG,
+            "Found update feed version=$latestVersion current=${BuildConfig.VERSION_NAME}"
+        )
+        val comparableVersion = versionParts(latestVersion)
+            ?: return CheckUpdateResult(hasUpdate = false)
+        if (compareVersions(comparableVersion, currentVersion) <= 0) {
+            return CheckUpdateResult(hasUpdate = false)
+        }
+        return CheckUpdateResult(
+            hasUpdate = true,
+            latestVersion = latestVersion,
+            releaseNotes = feed.notes,
+            downloadUrl = feed.apk,
+            isPreRelease = false,
+        )
+    }
+
+    internal fun resolveDownloadUrl(release: GitHubRelease, abi: String): String? {
+        val apks = release.assets.filter { it.name.endsWith(".apk", ignoreCase = true) }
+        if (apks.isEmpty()) return null
+        val fDroid = "fdroid"
+        val preferFdroid = BuildConfig.APPLICATION_ID.contains(fDroid, ignoreCase = true)
+
+        fun matchesChannel(name: String): Boolean {
+            val hasFdroid = name.contains(fDroid, ignoreCase = true)
+            return if (preferFdroid) hasFdroid else !hasFdroid
+        }
+
+        // Universal builds first: ABI-named assets are optional for this fork.
+        apks.firstOrNull {
+            matchesChannel(it.name) && it.name.contains("universal", ignoreCase = true)
+        }?.browserDownloadUrl?.let { return it }
+
+        if (abi.isNotBlank()) {
+            apks.firstOrNull {
+                matchesChannel(it.name) && it.name.contains(abi, ignoreCase = true)
+            }?.browserDownloadUrl?.let { return it }
+        }
+
+        return apks.firstOrNull { matchesChannel(it.name) }?.browserDownloadUrl
+            ?: apks.firstOrNull()?.browserDownloadUrl
+    }
+
+    internal fun versionParts(raw: String): List<Int>? {
         val cleaned = raw.removePrefix("v").trim()
         if (cleaned.isEmpty() || !cleaned.first().isDigit()) return null
         return cleaned.split('.', '-', '_').map { token ->
@@ -85,7 +153,7 @@ object UpdateCheckerManager {
         }
     }
 
-    private fun compareVersions(version1: List<Int>, version2: List<Int>): Int {
+    internal fun compareVersions(version1: List<Int>, version2: List<Int>): Int {
         for (i in 0 until maxOf(version1.size, version2.size)) {
             val num1 = version1.getOrElse(i) { 0 }
             val num2 = version2.getOrElse(i) { 0 }
@@ -94,18 +162,4 @@ object UpdateCheckerManager {
         return 0
     }
 
-    private fun getDownloadUrl(release: GitHubRelease, abi: String): String {
-        val apks = release.assets.filter { it.name.endsWith(".apk", ignoreCase = true) }
-        val fDroid = "fdroid"
-        val assetsByAbi = apks.filter { it.name.contains(abi, ignoreCase = true) }
-        val asset = if (BuildConfig.APPLICATION_ID.contains(fDroid, ignoreCase = true)) {
-            assetsByAbi.firstOrNull { it.name.contains(fDroid, ignoreCase = true) }
-        } else {
-            assetsByAbi.firstOrNull { !it.name.contains(fDroid, ignoreCase = true) }
-        }
-
-        return asset?.browserDownloadUrl
-            ?: apks.firstOrNull { it.name.contains("universal", ignoreCase = true) }?.browserDownloadUrl
-            ?: throw IllegalStateException("No compatible APK found")
-    }
 }

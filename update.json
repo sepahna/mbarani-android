@@ -1,0 +1,5 @@
+{
+  "version": "2.3.35",
+  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.35/barani_2.3.35_universal.apk",
+  "notes": "Update check no longer depends only on GitHub API. Prefer site/CDN feed when GitHub returns 504."
+}
