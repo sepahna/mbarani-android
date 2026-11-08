@@ -1,9 +1,9 @@
 تغییرات این نسخه
-- نام برنامه و تاگل Quick Settings به v2rayBaran تغییر کرد.
-- آیکن جدید برنامه اعمال شد.
-- اگر دسته «رایگان» خالی باشد، پیام «به‌زودی» و راهنمای خرید از سایت نشان داده می‌شود.
+- نوار بالا مرتب شد: منو، افزودن، کانال، خرید، جستجو و تست تأخیر واقعی (آیکن کیلومتر).
+- آیکن‌های خرید، جستجو، کانال و تست سرعت به‌روز شدند؛ تیکت و ویدیو از نوار بالا حذف شدند.
+- پینگ خودکار سبک‌تر شد (TCP) تا تعویض دسته روان‌تر باشد؛ پینگ واقعی از آیکن کیلومتر یا منو.
 
 What's new
-- Renamed the app and Quick Settings tile to v2rayBaran.
-- Updated the app icon.
-- When the Free category has no configs, show a coming-soon message and a site purchase CTA.
+- Reordered the top bar: more, add, channel, buy, search, and a gauge that runs real-delay tests for the current group.
+- Updated Lucide-style buy/search/gauge icons and the channel icon; removed ticket and video from the top bar.
+- Softened automatic reachability checks to lightweight TCP; full real delay stays manual.

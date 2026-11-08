@@ -110,6 +110,7 @@ class MainViewModel(
 
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
+    private var autoPingJob: Job? = null
     private val autoRealPingStamp = ConcurrentHashMap<String, Long>()
 
     private val initialPageReady = CompletableDeferred<Unit>()
@@ -883,21 +884,33 @@ class MainViewModel(
 
     // ---------- Testing ----------
     /**
-     * Refresh the selected group with the same real-delay probe as "Test real delays".
-     * A short cooldown avoids restarting a full outbound measurement on every tab switch.
+     * After the selected group settles, run a lightweight TCP reachability check.
+     * Full real-delay measurement stays manual so tab switches stay responsive.
+     * A short cooldown avoids restarting the probe on every quick revisit.
      */
     private fun scheduleAutoRealPing(groupId: String, force: Boolean = false) {
-        if (groupId.isEmpty() || testRequests.isTesting) return
+        autoPingJob?.cancel()
+        autoPingJob = null
+        if (groupId.isEmpty()) return
         if (uiState.value.selectedGroupId != groupId) return
         val elapsed = System.currentTimeMillis() - (autoRealPingStamp[groupId] ?: 0L)
         if (!force && elapsed < AUTO_REAL_PING_COOLDOWN_MS && autoRealPingStamp.containsKey(groupId)) {
             return
         }
-        autoRealPingStamp[groupId] = System.currentTimeMillis()
-        testAllRealPing(onlyTcp = false)
+        autoPingJob = viewModelScope.launch {
+            delay(AUTO_REAL_PING_SETTLE_MS)
+            if (uiState.value.selectedGroupId != groupId) return@launch
+            if (testRequests.isTesting) return@launch
+            autoRealPingStamp[groupId] = System.currentTimeMillis()
+            // Detach before starting so cancelAllPing inside the bulk test does not cancel us.
+            autoPingJob = null
+            testAllRealPing(onlyTcp = true, preserveExistingDelays = true)
+        }
     }
 
     fun cancelAllPing() {
+        autoPingJob?.cancel()
+        autoPingJob = null
         bulkTestJob?.cancel()
         bulkTestJob = null
         testRequests.cancelBulk()
@@ -918,7 +931,7 @@ class MainViewModel(
         }
     }
 
-    fun testAllRealPing(onlyTcp: Boolean = false) {
+    fun testAllRealPing(onlyTcp: Boolean = false, preserveExistingDelays: Boolean = false) {
         cancelAllPing()
         val groupId = uiState.value.selectedGroupId
         val servers = currentServers()
@@ -926,17 +939,20 @@ class MainViewModel(
             return
         }
         val serverGuids = servers.map { it.guid }
-        mutableServerGroupState(groupId).update { current ->
-            current.copy(
-                servers = current.servers.map { server ->
-                    if (server.testDelayMillis == 0L) server
-                    else server.copy(testDelayMillis = 0L)
-                },
-                rows = current.rows.map { row ->
-                    if (row.testDelayMillis == 0L) row
-                    else row.copy(testDelayMillis = 0L)
-                }
-            )
+        val clearDelays = shouldClearDelaysBeforeBulkPing(preserveExistingDelays)
+        if (clearDelays) {
+            mutableServerGroupState(groupId).update { current ->
+                current.copy(
+                    servers = current.servers.map { server ->
+                        if (server.testDelayMillis == 0L) server
+                        else server.copy(testDelayMillis = 0L)
+                    },
+                    rows = current.rows.map { row ->
+                        if (row.testDelayMillis == 0L) row
+                        else row.copy(testDelayMillis = 0L)
+                    }
+                )
+            }
         }
         val request = testRequests.beginBulk(groupId)
         val message = TestServiceMessage(
@@ -952,14 +968,16 @@ class MainViewModel(
             )
         }
         bulkTestJob = viewModelScope.launch {
-            withContext(ioDispatcher) {
-                dataSource.clearAllTestDelayResults(serverGuids)
-                val resetGuids = serverGuids.toHashSet()
-                cacheMutex.withLock {
-                    groupDataCache[groupId]?.let { cached ->
-                        groupDataCache[groupId] = cached.map { server ->
-                            if (server.guid !in resetGuids || server.testDelayMillis == 0L) server
-                            else server.copy(testDelayMillis = 0L)
+            if (clearDelays) {
+                withContext(ioDispatcher) {
+                    dataSource.clearAllTestDelayResults(serverGuids)
+                    val resetGuids = serverGuids.toHashSet()
+                    cacheMutex.withLock {
+                        groupDataCache[groupId]?.let { cached ->
+                            groupDataCache[groupId] = cached.map { server ->
+                                if (server.guid !in resetGuids || server.testDelayMillis == 0L) server
+                                else server.copy(testDelayMillis = 0L)
+                            }
                         }
                     }
                 }
@@ -1077,6 +1095,8 @@ class MainViewModel(
         selectedGroupLoadJob?.cancel()
         reloadJob?.cancel()
         filterJob?.cancel()
+        autoPingJob?.cancel()
+        autoPingJob = null
         cancelAllPing()
         dataSource.close()
         super.onCleared()
@@ -1096,5 +1116,10 @@ class MainViewModel(
     private companion object {
         const val TEST_RESULT_FLUSH_INTERVAL_MS = 500L
         const val AUTO_REAL_PING_COOLDOWN_MS = 30_000L
+        const val AUTO_REAL_PING_SETTLE_MS = 400L
     }
 }
+
+/** Auto TCP reachability must not wipe previous delay labels on the list. */
+internal fun shouldClearDelaysBeforeBulkPing(preserveExistingDelays: Boolean): Boolean =
+    !preserveExistingDelays
