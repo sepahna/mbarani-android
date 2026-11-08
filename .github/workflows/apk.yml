@@ -42,13 +42,30 @@ jobs:
 
       - name: Download libv2ray
         run: |
-          git -C AndroidLibXrayLite fetch --tags --force
-          TAG="$(git -C AndroidLibXrayLite describe --tags --abbrev=0 || echo v26.10.31)"
+          set -euo pipefail
+          ROOT="$(pwd)"
+          SUB="$ROOT/AndroidLibXrayLite"
+          git submodule update --init --recursive --depth 1 AndroidLibXrayLite
+          TOP="$(git -C "$SUB" rev-parse --show-toplevel)"
+          if [ "$TOP" = "$ROOT" ]; then
+            echo "AndroidLibXrayLite submodule checkout is missing"
+            exit 1
+          fi
+          git -C "$SUB" fetch --tags --force
+          TAG="$(git -C "$SUB" describe --tags --exact-match HEAD 2>/dev/null || true)"
+          if [ -z "$TAG" ]; then
+            TAG="$(git -C "$SUB" tag --list 'v2[0-9].*' --sort=-v:refname | head -1)"
+          fi
+          if [ -z "$TAG" ]; then
+            TAG="v26.10.31"
+          fi
           echo "libv2ray tag: $TAG"
           mkdir -p V2rayNG/app/libs
-          curl -fL --retry 8 --retry-all-errors --retry-delay 5 \
+          URL="https://github.com/2dust/AndroidLibXrayLite/releases/download/${TAG}/libv2ray.aar"
+          echo "Downloading $URL"
+          curl -fL --retry 10 --retry-all-errors --retry-delay 5 \
             -o V2rayNG/app/libs/libv2ray.aar \
-            "https://github.com/2dust/AndroidLibXrayLite/releases/download/${TAG}/libv2ray.aar"
+            "$URL"
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -64,12 +81,20 @@ jobs:
         run: |
           set -euo pipefail
           chmod 755 gradlew
+          TMP_ZIP="${RUNNER_TEMP}/gradle-9.8.2-bin.zip"
           for attempt in 1 2 3 4 5 6 7 8; do
             echo "Gradle bootstrap attempt ${attempt}"
-            if ./gradlew --version; then
-              exit 0
+            rm -f "$TMP_ZIP" || true
+            if curl -fL --retry 8 --retry-all-errors --retry-delay 5 \
+              -o "$TMP_ZIP" \
+              "https://services.gradle.org/distributions/gradle-9.8.2-bin.zip"; then
+              # Point the wrapper at the local zip so Java URLConnection 504 is avoided.
+              sed -i "s|^distributionUrl=.*|distributionUrl=file\\:${TMP_ZIP}|" \
+                gradle/wrapper/gradle-wrapper.properties
+              if ./gradlew --version; then
+                exit 0
+              fi
             fi
-            rm -rf "${HOME}/.gradle/wrapper/dists/gradle-9.8.2-bin" || true
             sleep $((attempt * 8))
           done
           echo "Failed to download Gradle after retries"
