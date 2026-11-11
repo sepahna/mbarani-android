@@ -34,7 +34,6 @@ interface MainDataSource : Closeable {
 
     fun getServerGuidList(groupId: String): List<String>
     fun decodeServerConfig(guid: String): ProfileItem?
-    fun encodeServerConfig(guid: String, config: ProfileItem)
     fun decodeAffiliationInfo(guid: String): ServerAffiliationInfo?
 
     fun encodeServerList(guids: List<String>, groupId: String)

@@ -68,7 +68,6 @@ internal enum class ServerMenuAction(
     ShareFullContent(R.string.share_method_full_content, isShareAction = true, supportsComplexProfiles = true),
     RealPing(R.string.title_real_ping_all_server, isShareAction = false, supportsComplexProfiles = true),
     Edit(R.string.action_edit, isShareAction = false, supportsComplexProfiles = true),
-    Rename(R.string.group_tab_rename, isShareAction = false, supportsComplexProfiles = true),
     Delete(R.string.action_delete, isShareAction = false, supportsComplexProfiles = true),
 }
 
@@ -129,7 +128,6 @@ fun ShareMethodDialog(
     onDismiss: () -> Unit,
     onAction: (MainAction) -> Unit,
     onRemove: (String, String) -> Unit,
-    onRename: (String, String) -> Unit,
 ) {
     val menuActions = serverMenuActions(
         isComplexProfile = profile.configType.isComplexType(),
@@ -146,7 +144,6 @@ fun ShareMethodDialog(
                 ServerMenuAction.ShareFullContent -> onAction(MainAction.ShareFullContent(guid))
                 ServerMenuAction.RealPing -> onAction(MainAction.TestServerRealPing(guid))
                 ServerMenuAction.Edit -> onAction(MainAction.EditServer(guid, profile))
-                ServerMenuAction.Rename -> onRename(guid, profile.remarks)
                 ServerMenuAction.Delete -> onRemove(guid, profile.remarks)
             }
         },

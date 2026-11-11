@@ -13,11 +13,6 @@
     <string name="group_tab_rename">নাম পরিবর্তন</string>
     <string name="group_tab_rename_title">বিভাগের নাম পরিবর্তন</string>
     <string name="group_tab_rename_label">নাম</string>
-    <string name="server_rename_title">কনফিগের নাম পরিবর্তন</string>
-    <string name="server_move_title">কনফিগ স্থানান্তর</string>
-    <string name="server_move_only_one">শুধু একটি কনফিগ আছে।</string>
-    <string name="acc_move_server">স্থানান্তর</string>
-    <string name="acc_rename">নাম পরিবর্তন</string>
     <string name="free_group_summary">সাইট থেকে আপডেট হয়। সেখানে মুছে ফেলা কনফিগ পরবর্তী আপডেটে এখানেও মুছে যায়।</string>
     <string name="free_group_empty_title">শীঘ্রই আসছে</string>
     <string name="free_group_empty_message">কেনাকাটার জন্য ওয়েবসাইটে যান।</string>

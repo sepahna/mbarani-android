@@ -61,8 +61,6 @@ sealed interface MainAction {
     data class SelectGroup(val groupId: String) : MainAction
     data class SelectServer(val guid: String) : MainAction
     data class RemoveServer(val guid: String) : MainAction
-    data class RenameServer(val guid: String, val name: String) : MainAction
-    data class MoveServerBefore(val groupId: String, val guid: String, val beforeGuid: String?) : MainAction
     data class RenameGroup(val groupId: String, val name: String) : MainAction
     data class TestServerRealPing(val guid: String) : MainAction
     data class EditServer(val guid: String, val profile: com.v2ray.ang.dto.entities.ProfileItem) : MainAction

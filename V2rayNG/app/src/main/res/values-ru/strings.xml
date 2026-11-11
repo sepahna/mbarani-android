@@ -13,11 +13,6 @@
     <string name="group_tab_rename">Переименовать</string>
     <string name="group_tab_rename_title">Переименовать категорию</string>
     <string name="group_tab_rename_label">Название</string>
-    <string name="server_rename_title">Переименовать конфигурацию</string>
-    <string name="server_move_title">Переместить конфигурацию</string>
-    <string name="server_move_only_one">Есть только одна конфигурация.</string>
-    <string name="acc_move_server">Переместить</string>
-    <string name="acc_rename">Переименовать</string>
     <string name="free_group_summary">Обновляется с сайта. Конфиг, удалённый там, удаляется здесь при следующем обновлении.</string>
     <string name="free_group_empty_title">Скоро</string>
     <string name="free_group_empty_message">Для покупки перейдите на сайт.</string>

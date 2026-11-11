@@ -74,12 +74,6 @@ fun MainScreen(
     var renameGroup by rememberSaveable(stateSaver = GroupRenameTarget.Saver) {
         mutableStateOf<GroupRenameTarget?>(null)
     }
-    var renameServer by rememberSaveable(stateSaver = ServerRenameTarget.Saver) {
-        mutableStateOf<ServerRenameTarget?>(null)
-    }
-    var moveServer by rememberSaveable(stateSaver = ServerMoveTarget.Saver) {
-        mutableStateOf<ServerMoveTarget?>(null)
-    }
     val removeServer: (String, String) -> Unit = { guid, profileName ->
         if (confirmRemove) {
             showRemoveConfirm = ServerDeleteTarget(guid, profileName)
@@ -148,7 +142,6 @@ fun MainScreen(
             onDismiss = { shareTarget = null },
             onAction = onAction,
             onRemove = removeServer,
-            onRename = { guid, name -> renameServer = ServerRenameTarget(guid, name) },
         )
     }
     if (shareQRCodeBitmap != null) {
@@ -198,33 +191,6 @@ fun MainScreen(
                 renameGroup = null
             },
             onDismiss = { renameGroup = null }
-        )
-    }
-    renameServer?.let { target ->
-        NamePromptDialog(
-            title = stringResource(R.string.server_rename_title),
-            initialName = target.name,
-            onConfirm = { name ->
-                onAction(MainAction.RenameServer(target.guid, name))
-                renameServer = null
-            },
-            onDismiss = { renameServer = null }
-        )
-    }
-    moveServer?.let { target ->
-        val groupState by mainViewModel.serverGroupState(target.groupId).collectAsStateWithLifecycle()
-        ServerMoveDialog(
-            servers = groupState.servers,
-            guid = target.guid,
-            onMoveBefore = { beforeGuid ->
-                onAction(MainAction.MoveServerBefore(target.groupId, target.guid, beforeGuid))
-                moveServer = null
-            },
-            onMoveLast = {
-                onAction(MainAction.MoveServerBefore(target.groupId, target.guid, null))
-                moveServer = null
-            },
-            onDismiss = { moveServer = null }
         )
     }
     deleteTarget?.let { group ->
@@ -347,12 +313,6 @@ fun MainScreen(
                                 shareTarget = Triple(guid, profile, true)
                             },
                             onRemoveServer = removeServer,
-                            onRenameServer = { guid, name ->
-                                renameServer = ServerRenameTarget(guid, name)
-                            },
-                            onMoveServerRequest = { guid ->
-                                moveServer = ServerMoveTarget(group.id, guid)
-                            },
                             onPingServer = { guid -> onAction(MainAction.TestServerRealPing(guid)) },
                             usageInfo = group.usageInfo,
                             groupTitle = group.remarks,

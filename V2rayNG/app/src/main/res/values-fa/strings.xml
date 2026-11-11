@@ -24,11 +24,6 @@
     <string name="group_tab_rename">تغییر نام</string>
     <string name="group_tab_rename_title">تغییر نام دسته‌بندی</string>
     <string name="group_tab_rename_label">نام</string>
-    <string name="server_rename_title">تغییر نام کانفیگ</string>
-    <string name="server_move_title">جابه‌جایی کانفیگ</string>
-    <string name="server_move_only_one">فقط یک کانفیگ وجود دارد.</string>
-    <string name="acc_move_server">جابه‌جایی</string>
-    <string name="acc_rename">تغییر نام</string>
     <string name="free_group_summary">از سایت به‌روز می‌شود. کانفیگی که آنجا حذف شود، در به‌روزرسانی بعدی اینجا هم پاک می‌شود.</string>
     <string name="free_group_empty_title">به‌زودی</string>
     <string name="free_group_empty_message">برای خرید به سایت مراجعه کنید.</string>

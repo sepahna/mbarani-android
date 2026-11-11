@@ -13,11 +13,6 @@
     <string name="group_tab_rename">重新命名</string>
     <string name="group_tab_rename_title">重新命名分類</string>
     <string name="group_tab_rename_label">名稱</string>
-    <string name="server_rename_title">重新命名設定</string>
-    <string name="server_move_title">移動設定</string>
-    <string name="server_move_only_one">只有一個設定。</string>
-    <string name="acc_move_server">移動</string>
-    <string name="acc_rename">重新命名</string>
     <string name="free_group_summary">從網站更新。網站上刪除的設定會在下次更新時從此處刪除。</string>
     <string name="free_group_empty_title">即將推出</string>
     <string name="free_group_empty_message">請前往網站購買。</string>

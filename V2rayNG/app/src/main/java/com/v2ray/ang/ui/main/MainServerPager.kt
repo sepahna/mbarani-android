@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -93,8 +92,6 @@ fun GroupPagerPage(
     onShareServer: (String, ProfileItem) -> Unit,
     onMoreServer: (String, ProfileItem) -> Unit,
     onRemoveServer: (String, String) -> Unit,
-    onRenameServer: (String, String) -> Unit,
-    onMoveServerRequest: (String) -> Unit,
     onPingServer: (String) -> Unit,
     usageInfo: SubscriptionUsageInfo?,
     groupTitle: String,
@@ -112,10 +109,7 @@ fun GroupPagerPage(
         onShareServer,
         onMoreServer,
         onRemoveServer,
-        onRenameServer,
-        onMoveServerRequest,
         onPingServer,
-        canReorder,
     ) {
         ServerRowActions(
             select = onSelectServer,
@@ -123,8 +117,6 @@ fun GroupPagerPage(
             share = onShareServer,
             more = onMoreServer,
             remove = onRemoveServer,
-            rename = onRenameServer,
-            move = if (canReorder) onMoveServerRequest else null,
             ping = onPingServer,
         )
     }
@@ -224,8 +216,6 @@ private class ServerRowActions(
     val share: (String, ProfileItem) -> Unit,
     val more: (String, ProfileItem) -> Unit,
     val remove: (String, String) -> Unit,
-    val rename: (String, String) -> Unit,
-    val move: ((String) -> Unit)?,
     val ping: (String) -> Unit,
 )
 
@@ -455,7 +445,8 @@ private fun ServerListItem(
                 .weight(1f)
                 .padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
         ) {
-            val managementIcons: @Composable RowScope.() -> Unit = {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(row.remarks, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph), maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (doubleColumnDisplay) {
                     IconButton(onClick = { actions.more(row.guid, row.profile) }, Modifier.size(36.dp)) {
                         Icon(
@@ -486,44 +477,13 @@ private fun ServerListItem(
                             Modifier.size(24.dp)
                         )
                     }
-                }
-                actions.move?.let { move ->
-                    IconButton(onClick = { move(row.guid) }, Modifier.size(36.dp)) {
+                    IconButton(onClick = { actions.remove(row.guid, row.remarks) }, Modifier.size(36.dp)) {
                         Icon(
-                            painterResource(R.drawable.ic_swap_vert_24dp),
-                            stringResource(R.string.acc_move_server),
+                            painterResource(R.drawable.ic_delete_24dp),
+                            stringResource(R.string.acc_delete),
                             Modifier.size(24.dp)
                         )
                     }
-                }
-                IconButton(onClick = { actions.rename(row.guid, row.remarks) }, Modifier.size(36.dp)) {
-                    Icon(
-                        painterResource(R.drawable.ic_rename_24dp),
-                        stringResource(R.string.acc_rename),
-                        Modifier.size(24.dp)
-                    )
-                }
-                IconButton(onClick = { actions.remove(row.guid, row.remarks) }, Modifier.size(36.dp)) {
-                    Icon(
-                        painterResource(R.drawable.ic_delete_24dp),
-                        stringResource(R.string.acc_delete),
-                        Modifier.size(24.dp)
-                    )
-                }
-            }
-            if (doubleColumnDisplay) {
-                Text(
-                    row.remarks,
-                    Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically, content = managementIcons)
-            } else {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(row.remarks, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    managementIcons()
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))

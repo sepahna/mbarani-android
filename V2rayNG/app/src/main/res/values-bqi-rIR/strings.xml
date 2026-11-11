@@ -13,11 +13,6 @@
     <string name="group_tab_rename">عوض کردن نوم</string>
     <string name="group_tab_rename_title">عوض کردن نوم دسته‌بندی</string>
     <string name="group_tab_rename_label">نوم</string>
-    <string name="server_rename_title">عوض کردن نوم کانفیگ</string>
-    <string name="server_move_title">جاگورویی کانفیگ</string>
-    <string name="server_move_only_one">فقط ی کانفیگ هس.</string>
-    <string name="acc_move_server">جاگورویی</string>
-    <string name="acc_rename">عوض کردن نوم</string>
     <string name="free_group_summary">سی سایت وانۊ أبۊ. کانفیگی که اوشوه پاک ابۊ، تو وانۊ کردن بعدی ایچو هم پاک أبۊ.</string>
     <string name="free_group_empty_title">بزۊدی</string>
     <string name="free_group_empty_message">سی خأریدن به سایت سربزنین.</string>

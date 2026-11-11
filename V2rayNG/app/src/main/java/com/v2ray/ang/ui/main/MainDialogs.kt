@@ -30,30 +30,6 @@ data class GroupRenameTarget(
     }
 }
 
-data class ServerRenameTarget(
-    val guid: String,
-    val name: String,
-) {
-    companion object {
-        val Saver = listSaver<ServerRenameTarget?, String>(
-            save = { target -> target?.let { listOf(it.guid, it.name) }.orEmpty() },
-            restore = { ServerRenameTarget(it[0], it[1]) },
-        )
-    }
-}
-
-data class ServerMoveTarget(
-    val groupId: String,
-    val guid: String,
-) {
-    companion object {
-        val Saver = listSaver<ServerMoveTarget?, String>(
-            save = { target -> target?.let { listOf(it.groupId, it.guid) }.orEmpty() },
-            restore = { ServerMoveTarget(it[0], it[1]) },
-        )
-    }
-}
-
 @Composable
 fun MainDialogs(
     showDelAllConfirm: Boolean,

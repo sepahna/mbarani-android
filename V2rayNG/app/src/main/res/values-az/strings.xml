@@ -13,11 +13,6 @@
     <string name="group_tab_rename">Adını dəyiş</string>
     <string name="group_tab_rename_title">Kateqoriyanın adını dəyiş</string>
     <string name="group_tab_rename_label">Ad</string>
-    <string name="server_rename_title">Konfiqurasiyanın adını dəyiş</string>
-    <string name="server_move_title">Konfiqurasiyanı köçür</string>
-    <string name="server_move_only_one">Yalnız bir konfiqurasiya var.</string>
-    <string name="acc_move_server">Köçür</string>
-    <string name="acc_rename">Adını dəyiş</string>
     <string name="free_group_summary">Saytdan yenilənir. Orada silinən konfiq burada növbəti yeniləmədə silinir.</string>
     <string name="free_group_empty_title">Tezliklə</string>
     <string name="free_group_empty_message">Alış üçün sayta müraciət edin.</string>

@@ -306,8 +306,6 @@ class MainViewModel(
             is MainAction.SelectGroup -> subscriptionIdChanged(action.groupId)
             is MainAction.SelectServer -> updateSelectedGuid(action.guid)
             is MainAction.RemoveServer -> removeServerAndRefresh(action.guid)
-            is MainAction.RenameServer -> renameServer(action.guid, action.name)
-            is MainAction.MoveServerBefore -> moveServerBefore(action.groupId, action.guid, action.beforeGuid)
             is MainAction.RenameGroup -> renameGroup(action.groupId, action.name)
             is MainAction.TestServerRealPing -> testServerRealPing(action.guid)
             is MainAction.Search -> filterConfig(action.query)
@@ -884,49 +882,6 @@ class MainViewModel(
                 RenameOutcome.Unchanged -> Unit
             }
         }
-    }
-
-    private fun renameServer(guid: String, name: String) {
-        viewModelScope.launch(ioDispatcher) {
-            val outcome = applyStoredRename(
-                requestedName = name,
-                allowed = guid.isNotBlank(),
-                currentName = { dataSource.decodeServerConfig(guid)?.remarks },
-                save = { trimmed ->
-                    val profile = dataSource.decodeServerConfig(guid)
-                        ?: error("Missing profile $guid")
-                    profile.remarks = trimmed
-                    dataSource.encodeServerConfig(guid, profile)
-                },
-            )
-            when (outcome) {
-                RenameOutcome.Updated -> setupGroupTab(forceRefresh = true).join()
-                is RenameOutcome.Failed -> LogUtil.e(
-                    AppConfig.TAG,
-                    "Failed to rename profile $guid",
-                    outcome.error,
-                )
-                RenameOutcome.Empty,
-                RenameOutcome.NotAllowed,
-                RenameOutcome.Missing,
-                RenameOutcome.Unchanged -> Unit
-            }
-        }
-    }
-
-    private fun moveServerBefore(groupId: String, guid: String, beforeGuid: String?) {
-        if (groupId.isEmpty() || keywordFilter.isNotEmpty()) return
-        val servers = mutableServerGroupState(groupId).value.servers
-        val from = servers.indexOfFirst { it.guid == guid }
-        val before = if (beforeGuid == null) {
-            null
-        } else {
-            val index = servers.indexOfFirst { it.guid == beforeGuid }
-            if (index < 0) return
-            index
-        }
-        val to = reorderDestination(servers.size, from, before) ?: return
-        moveServer(groupId, from, to)
     }
 
     fun removeServerAndRefresh(guid: String) {

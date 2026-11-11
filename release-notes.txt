@@ -1,9 +1,9 @@
 تغییرات این نسخه
-- با نگه‌داشتن طولانی روی دسته‌بندی، علاوه بر جابه‌جایی و حذف، تغییر نام هم هست
-- روی هر کانفیگ آیکون جابه‌جایی، تغییر نام و حذف اضافه شد
-- کنار پروتکل، تاریخ ورود کانفیگ به صورت شمسی و میلادی و با رنگ خاکستری نشان داده می‌شود
+- تغییر نام فقط برای دسته‌بندی است و با نگه‌داشتن طولانی انجام می‌شود
+- آیکون جابه‌جایی و آیکون تغییر نام از روی خود کانفیگ برداشته شد
+- تاریخ ورود کانفیگ کنار پروتکل، شمسی و میلادی و خاکستری، سر جایش است
 
 What's new
-- Long-press a category to rename it, along with move and delete
-- Each configuration has move, rename, and delete icons
-- The import date appears beside the protocol in Jalali and Gregorian, in small gray text
+- Rename applies only to a category, from a long press
+- The move and rename icons were removed from each configuration
+- The import date stays beside the protocol in Jalali and Gregorian, in small gray text

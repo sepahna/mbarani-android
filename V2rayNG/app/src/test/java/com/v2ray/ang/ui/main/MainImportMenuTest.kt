@@ -50,7 +50,6 @@ class MainImportMenuTest {
             ServerMenuAction.ShareFullContent,
             ServerMenuAction.RealPing,
             ServerMenuAction.Edit,
-            ServerMenuAction.Rename,
             ServerMenuAction.Delete,
         )
         assertEquals(expected, serverMenuActions(isComplexProfile = true, includeManagementActions = true))
