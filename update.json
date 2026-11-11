@@ -1,5 +1,5 @@
 {
-  "version": "2.3.39",
-  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.39/barani_2.3.39_universal.apk",
-  "notes": "تغییر نام فقط برای دسته‌بندی است، با نگه‌داشتن طولانی. آیکون جابه‌جایی و تغییر نام از روی کانفیگ برداشته شد. تاریخ ورود کنار پروتکل، شمسی و میلادی، مانده است.\n\nRename is only for categories, from a long press. Move and rename icons were removed from each config. The import date stays beside the protocol in Jalali and Gregorian."
+  "version": "2.4.0",
+  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.4.0/barani_2.4.0_universal.apk",
+  "notes": "رابط باران از نو طراحی شد: پس‌زمینه شیدر، انیمیشن Lottie، مدار Rive، کارت شیشه‌ای برای کانفیگ و فونت وزیرمتن. تغییر نام دسته‌بندی و تاریخ ورود سر جایشان هستند.\n\nThe Baran interface is new: a shader field, a Lottie arc, a Rive orbit, glass config cards, and the Vazirmatn typeface. Category rename and the import date stay."
 }

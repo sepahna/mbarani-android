@@ -1,9 +1,11 @@
 تغییرات این نسخه
-- تغییر نام فقط برای دسته‌بندی است و با نگه‌داشتن طولانی انجام می‌شود
-- آیکون جابه‌جایی و آیکون تغییر نام از روی خود کانفیگ برداشته شد
-- تاریخ ورود کانفیگ کنار پروتکل، شمسی و میلادی و خاکستری، سر جایش است
+- رابط اصلی از نو طراحی شد و دیگر شبیه فهرست ساده v2ray نیست
+- پس‌زمینه با شیدر، نشان خانه با Lottie و مدار تعاملی Rive
+- کارت شیشه‌ای برای کانفیگ، تب‌های جدا، و فونت وزیرمتن در همه صفحه‌ها
+- تغییر نام دسته‌بندی و تاریخ ورود کنار پروتکل سر جایشان هستند
 
 What's new
-- Rename applies only to a category, from a long press
-- The move and rename icons were removed from each configuration
-- The import date stays beside the protocol in Jalali and Gregorian, in small gray text
+- The home interface is redesigned and no longer follows the plain v2ray list
+- A shader field, a Lottie arc, and an interactive Rive orbit
+- Glass configuration cards, separate category chips, and Vazirmatn across screens
+- Category rename and the import date beside the protocol stay
