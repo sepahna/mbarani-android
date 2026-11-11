@@ -1,9 +1,9 @@
 تغییرات این نسخه
-- آیکون + در مرکز نوار بالا، داخل مربع با گوشه گرد
-- چهار آیکون سمت چپ و چهار آیکون سمت راست
-- اگر فید آپدیت کش‌شده قدیمی باشد، بقیه منابع هم چک می‌شوند تا نسخه جدید از دست نرود
+- با نگه‌داشتن طولانی روی دسته‌بندی، علاوه بر جابه‌جایی و حذف، تغییر نام هم هست
+- روی هر کانفیگ آیکون جابه‌جایی، تغییر نام و حذف اضافه شد
+- کنار پروتکل، تاریخ ورود کانفیگ به صورت شمسی و میلادی و با رنگ خاکستری نشان داده می‌شود
 
 What's new
-- Centered + button on the main top bar inside a rounded square
-- Four icons on each side for balanced layout
-- Update check continues across feeds when a cached feed is stale
+- Long-press a category to rename it, along with move and delete
+- Each configuration has move, rename, and delete icons
+- The import date appears beside the protocol in Jalali and Gregorian, in small gray text

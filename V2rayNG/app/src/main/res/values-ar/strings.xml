@@ -10,6 +10,14 @@
     <string name="action_stop_service">إيقاف الخدمة</string>
     <string name="action_ok">موافق</string>
     <string name="action_cancel">إلغاء</string>
+    <string name="group_tab_rename">تغيير الاسم</string>
+    <string name="group_tab_rename_title">تغيير اسم التصنيف</string>
+    <string name="group_tab_rename_label">الاسم</string>
+    <string name="server_rename_title">تغيير اسم الإعداد</string>
+    <string name="server_move_title">نقل الإعداد</string>
+    <string name="server_move_only_one">لا يوجد سوى إعداد واحد.</string>
+    <string name="acc_move_server">نقل</string>
+    <string name="acc_rename">تغيير الاسم</string>
     <string name="free_group_summary">يتم تحديثه من الموقع. أي إعداد يُحذف هناك يُحذف هنا في التحديث التالي.</string>
     <string name="free_group_empty_title">قريبًا</string>
     <string name="free_group_empty_message">لشراء الاشتراك، راجع الموقع.</string>

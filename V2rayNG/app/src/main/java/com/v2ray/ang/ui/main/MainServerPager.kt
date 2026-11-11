@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -92,6 +93,8 @@ fun GroupPagerPage(
     onShareServer: (String, ProfileItem) -> Unit,
     onMoreServer: (String, ProfileItem) -> Unit,
     onRemoveServer: (String, String) -> Unit,
+    onRenameServer: (String, String) -> Unit,
+    onMoveServerRequest: (String) -> Unit,
     onPingServer: (String) -> Unit,
     usageInfo: SubscriptionUsageInfo?,
     groupTitle: String,
@@ -109,7 +112,10 @@ fun GroupPagerPage(
         onShareServer,
         onMoreServer,
         onRemoveServer,
+        onRenameServer,
+        onMoveServerRequest,
         onPingServer,
+        canReorder,
     ) {
         ServerRowActions(
             select = onSelectServer,
@@ -117,6 +123,8 @@ fun GroupPagerPage(
             share = onShareServer,
             more = onMoreServer,
             remove = onRemoveServer,
+            rename = onRenameServer,
+            move = if (canReorder) onMoveServerRequest else null,
             ping = onPingServer,
         )
     }
@@ -216,6 +224,8 @@ private class ServerRowActions(
     val share: (String, ProfileItem) -> Unit,
     val more: (String, ProfileItem) -> Unit,
     val remove: (String, String) -> Unit,
+    val rename: (String, String) -> Unit,
+    val move: ((String) -> Unit)?,
     val ping: (String) -> Unit,
 )
 
@@ -445,8 +455,7 @@ private fun ServerListItem(
                 .weight(1f)
                 .padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
         ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(row.remarks, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            val managementIcons: @Composable RowScope.() -> Unit = {
                 if (doubleColumnDisplay) {
                     IconButton(onClick = { actions.more(row.guid, row.profile) }, Modifier.size(36.dp)) {
                         Icon(
@@ -477,13 +486,44 @@ private fun ServerListItem(
                             Modifier.size(24.dp)
                         )
                     }
-                    IconButton(onClick = { actions.remove(row.guid, row.remarks) }, Modifier.size(36.dp)) {
+                }
+                actions.move?.let { move ->
+                    IconButton(onClick = { move(row.guid) }, Modifier.size(36.dp)) {
                         Icon(
-                            painterResource(R.drawable.ic_delete_24dp),
-                            stringResource(R.string.acc_delete),
+                            painterResource(R.drawable.ic_swap_vert_24dp),
+                            stringResource(R.string.acc_move_server),
                             Modifier.size(24.dp)
                         )
                     }
+                }
+                IconButton(onClick = { actions.rename(row.guid, row.remarks) }, Modifier.size(36.dp)) {
+                    Icon(
+                        painterResource(R.drawable.ic_rename_24dp),
+                        stringResource(R.string.acc_rename),
+                        Modifier.size(24.dp)
+                    )
+                }
+                IconButton(onClick = { actions.remove(row.guid, row.remarks) }, Modifier.size(36.dp)) {
+                    Icon(
+                        painterResource(R.drawable.ic_delete_24dp),
+                        stringResource(R.string.acc_delete),
+                        Modifier.size(24.dp)
+                    )
+                }
+            }
+            if (doubleColumnDisplay) {
+                Text(
+                    row.remarks,
+                    Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically, content = managementIcons)
+            } else {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(row.remarks, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge.copy(lineBreak = LineBreak.Paragraph), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    managementIcons()
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
@@ -508,15 +548,27 @@ private fun ServerListItem(
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    row.typeDescription,
-                    modifier = Modifier.weight(1f, fill = false),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colorConfigType,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        row.typeDescription,
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colorConfigType,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (row.importDateText.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            row.importDateText,
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 12.sp),
+                            color = colorImportDate,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.width(8.dp))
                 if (testResult.isNotEmpty()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -540,6 +592,8 @@ private fun ServerListItem(
         }
     }
 }
+
+private val colorImportDate = Color(0xFF8A8A8A)
 
 private fun pingColor(delayMillis: Long): Color = when {
     delayMillis < 0L -> colorPingIdle

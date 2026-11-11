@@ -10,6 +10,14 @@
     <string name="action_stop_service">停止服务</string>
     <string name="action_ok">确定</string>
     <string name="action_cancel">取消</string>
+    <string name="group_tab_rename">重命名</string>
+    <string name="group_tab_rename_title">重命名分类</string>
+    <string name="group_tab_rename_label">名称</string>
+    <string name="server_rename_title">重命名配置</string>
+    <string name="server_move_title">移动配置</string>
+    <string name="server_move_only_one">只有一个配置。</string>
+    <string name="acc_move_server">移动</string>
+    <string name="acc_rename">重命名</string>
     <string name="free_group_summary">从网站更新。网站上删除的配置会在下次更新时从此处删除。</string>
     <string name="free_group_empty_title">即将推出</string>
     <string name="free_group_empty_message">请前往网站购买。</string>

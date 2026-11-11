@@ -172,6 +172,10 @@ class MainRepository(
     override fun getSubscriptionItem(id: String): SubscriptionItem? =
         MmkvManager.decodeSubscription(id)
 
+    override fun encodeSubscription(id: String, item: SubscriptionItem) {
+        MmkvManager.encodeSubscription(id, item)
+    }
+
     override fun getServerGuidList(groupId: String): List<String> =
         if (groupId.isEmpty()) {
             MmkvManager.decodeAllServerList()
@@ -181,6 +185,10 @@ class MainRepository(
 
     override fun decodeServerConfig(guid: String): ProfileItem? =
         MmkvManager.decodeServerConfig(guid)
+
+    override fun encodeServerConfig(guid: String, config: ProfileItem) {
+        MmkvManager.encodeServerConfig(guid, config)
+    }
 
     override fun decodeAffiliationInfo(guid: String): ServerAffiliationInfo? =
         MmkvManager.decodeServerAffiliationInfo(guid)

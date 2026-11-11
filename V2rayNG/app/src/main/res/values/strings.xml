@@ -21,6 +21,14 @@
     <string name="group_tab_move_only_one">There is only one category.</string>
     <string name="group_tab_delete_title">Delete category</string>
     <string name="group_tab_delete_message">Are you sure you want to delete “%1$s” and its subscription link?</string>
+    <string name="group_tab_rename">Rename</string>
+    <string name="group_tab_rename_title">Rename category</string>
+    <string name="group_tab_rename_label">Name</string>
+    <string name="server_rename_title">Rename configuration</string>
+    <string name="server_move_title">Move configuration</string>
+    <string name="server_move_only_one">There is only one configuration.</string>
+    <string name="acc_move_server">Move</string>
+    <string name="acc_rename">Rename</string>
     <string name="free_group_summary">Updated from the site. A config removed there is removed here on the next update.</string>
     <string name="free_group_empty_title">Coming soon</string>
     <string name="free_group_empty_message">Visit the website to purchase a plan.</string>

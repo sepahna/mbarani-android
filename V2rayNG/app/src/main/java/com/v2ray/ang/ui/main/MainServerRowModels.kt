@@ -5,6 +5,7 @@ import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.extension.nullIfBlank
 import com.v2ray.ang.handler.AngConfigManager
+import com.v2ray.ang.util.formatImportDates
 
 internal data class ServerRowUiModel(
     val guid: String,
@@ -12,6 +13,7 @@ internal data class ServerRowUiModel(
     val remarks: String,
     val statistics: String,
     val typeDescription: String,
+    val importDateText: String,
     val testDelayMillis: Long,
     val subscriptionBadge: String,
 )
@@ -33,6 +35,7 @@ internal fun buildServerRowUiModel(
         statistics = profile.description.nullIfBlank()
             ?: AngConfigManager.generateDescription(profile),
         typeDescription = serverProtocolDescription(profile),
+        importDateText = formatImportDates(profile.addedTime),
         testDelayMillis = server.testDelayMillis,
         subscriptionBadge = subscriptionRemarks.firstOrNull()?.toString().orEmpty(),
     )

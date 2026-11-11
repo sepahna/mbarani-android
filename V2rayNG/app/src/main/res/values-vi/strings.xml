@@ -10,6 +10,14 @@
     <string name="action_stop_service">Dừng dịch vụ</string>
     <string name="action_ok">OK</string>
     <string name="action_cancel">Hủy</string>
+    <string name="group_tab_rename">Đổi tên</string>
+    <string name="group_tab_rename_title">Đổi tên danh mục</string>
+    <string name="group_tab_rename_label">Tên</string>
+    <string name="server_rename_title">Đổi tên cấu hình</string>
+    <string name="server_move_title">Di chuyển cấu hình</string>
+    <string name="server_move_only_one">Chỉ có một cấu hình.</string>
+    <string name="acc_move_server">Di chuyển</string>
+    <string name="acc_rename">Đổi tên</string>
     <string name="free_group_summary">Được cập nhật từ trang web. Cấu hình bị xóa ở đó sẽ bị xóa ở đây trong lần cập nhật tiếp theo.</string>
     <string name="free_group_empty_title">Sắp ra mắt</string>
     <string name="free_group_empty_message">Vui lòng truy cập trang web để mua.</string>

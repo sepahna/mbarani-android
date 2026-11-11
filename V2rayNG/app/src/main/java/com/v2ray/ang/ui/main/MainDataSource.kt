@@ -30,9 +30,11 @@ interface MainDataSource : Closeable {
     fun moveSubscriptionBefore(groupId: String, beforeGroupId: String?): Boolean
     fun removeSubscription(groupId: String)
     fun getSubscriptionItem(id: String): SubscriptionItem?
+    fun encodeSubscription(id: String, item: SubscriptionItem)
 
     fun getServerGuidList(groupId: String): List<String>
     fun decodeServerConfig(guid: String): ProfileItem?
+    fun encodeServerConfig(guid: String, config: ProfileItem)
     fun decodeAffiliationInfo(guid: String): ServerAffiliationInfo?
 
     fun encodeServerList(guids: List<String>, groupId: String)
