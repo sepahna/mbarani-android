@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
+import com.v2ray.ang.ui.compose.BaranOrbitMark
 import com.v2ray.ang.ui.compose.AppDivider
 import com.v2ray.ang.ui.compose.verticalScrollbar
 
@@ -77,8 +79,11 @@ fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) ->
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(200.dp),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.35f)
             ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    BaranOrbitMark(Modifier.size(150.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -98,6 +103,7 @@ fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) ->
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
                 }
             }
             drawerItems.forEachIndexed { index, item ->

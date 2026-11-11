@@ -1,0 +1,2 @@
+baran_orbit.riv is circle_move.riv from https://github.com/rive-app/rive-android (MIT License).
+The Rive runtime is app.rive:rive-android, also MIT.

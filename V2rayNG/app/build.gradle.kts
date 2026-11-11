@@ -13,8 +13,8 @@ android {
         applicationId = "ir.mbarani.client"
         minSdk = 24
         targetSdk = 37
-        versionCode = 779
-        versionName = "2.3.39"
+        versionCode = 780
+        versionName = "2.4.0"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {
@@ -182,6 +182,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
+    implementation(libs.lottie.compose)
+    implementation(libs.rive.android)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 

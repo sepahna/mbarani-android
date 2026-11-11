@@ -1,7 +1,6 @@
 package com.v2ray.ang.ui.main
 
 import android.view.HapticFeedbackConstants
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -41,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -64,7 +62,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 private val TAB_BAR_PADDING = 3.dp
 private val TAB_SPACING = 2.dp
-private val TAB_HEIGHT = 30.dp
+private val TAB_HEIGHT = 36.dp
 private val SELECTED_TAB_MARGIN = 12.dp
 
 /**
@@ -85,18 +83,15 @@ fun GroupTabBar(
     modifier: Modifier = Modifier
 ) {
     val selectedIndex = selectedTabIndex.coerceIn(0, groups.lastIndex)
-    val colors = MaterialTheme.colorScheme
-    // The plain surface color equals the screen background in dark mode, so the bar needs its own tone there.
-    val dark = colors.surface.luminance() < 0.5f
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        shape = CircleShape,
-        color = if (dark) colors.surfaceContainerHigh else colors.surface,
-        border = BorderStroke(0.5.dp, colors.outlineVariant.copy(alpha = if (dark) 0.6f else 0.35f)),
-        shadowElevation = 3.dp
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(0.dp),
+        color = Color.Transparent,
+        shadowElevation = 0.dp,
+        tonalElevation = 0.dp,
     ) {
         BoxWithConstraints {
             val barPaddingPx = with(LocalDensity.current) { TAB_BAR_PADDING.roundToPx() }
@@ -206,7 +201,7 @@ private fun GroupTabItem(
             .bringIntoViewRequester(bringIntoView)
             .onSizeChanged { size = it }
             .clip(CircleShape)
-            .background(if (selected) colors.primary.copy(alpha = 0.12f) else Color.Transparent)
+            .background(if (selected) colors.primary.copy(alpha = 0.22f) else colors.surfaceContainerHigh.copy(alpha = 0.88f))
             .combinedClickable(
                 role = Role.Tab,
                 onClick = onClick,
