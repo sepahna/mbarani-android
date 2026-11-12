@@ -74,7 +74,9 @@ internal enum class ServerMenuAction(
 internal fun serverMenuActions(
     isComplexProfile: Boolean,
     includeManagementActions: Boolean,
+    allowShareAndEdit: Boolean = true,
 ): List<ServerMenuAction> = ServerMenuAction.entries.filter { action ->
+    if (!allowShareAndEdit && (action.isShareAction || action == ServerMenuAction.Edit)) return@filter false
     (includeManagementActions || action.isShareAction) && (!isComplexProfile || action.supportsComplexProfiles)
 }
 
@@ -125,6 +127,7 @@ fun ShareMethodDialog(
     guid: String,
     profile: ProfileItem,
     more: Boolean,
+    allowShareAndEdit: Boolean = true,
     onDismiss: () -> Unit,
     onAction: (MainAction) -> Unit,
     onRemove: (String, String) -> Unit,
@@ -132,6 +135,7 @@ fun ShareMethodDialog(
     val menuActions = serverMenuActions(
         isComplexProfile = profile.configType.isComplexType(),
         includeManagementActions = more,
+        allowShareAndEdit = allowShareAndEdit,
     )
     SelectListDialog(
         options = menuActions,

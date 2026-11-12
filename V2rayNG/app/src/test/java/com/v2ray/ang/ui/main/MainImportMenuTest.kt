@@ -54,4 +54,28 @@ class MainImportMenuTest {
         )
         assertEquals(expected, serverMenuActions(isComplexProfile = true, includeManagementActions = true))
     }
+
+    @Test
+    fun freeGroupMoreMenuKeepsPingAndDeleteOnly() {
+        assertEquals(
+            listOf(ServerMenuAction.RealPing, ServerMenuAction.Delete),
+            serverMenuActions(
+                isComplexProfile = false,
+                includeManagementActions = true,
+                allowShareAndEdit = false,
+            ),
+        )
+    }
+
+    @Test
+    fun freeGroupShareMenuIsEmpty() {
+        assertEquals(
+            emptyList<ServerMenuAction>(),
+            serverMenuActions(
+                isComplexProfile = false,
+                includeManagementActions = false,
+                allowShareAndEdit = false,
+            ),
+        )
+    }
 }

@@ -36,6 +36,7 @@ import com.v2ray.ang.extension.toast
 import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.extension.toastSuccess
 import com.v2ray.ang.handler.AngConfigManager
+import com.v2ray.ang.handler.FreeSubscription
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.handler.SettingsManager
@@ -239,10 +240,16 @@ class MainActivity : HelperBaseComponentActivity() {
         ApkUpdateInstaller.install(this, apk)
     }
 
-    private fun shareToClipboard(guid: String): Boolean =
-        AngConfigManager.share2Clipboard(this, guid) == 0
+    private fun shareToClipboard(guid: String): Boolean {
+        if (isFreeConfigLocked(guid)) return false
+        return AngConfigManager.share2Clipboard(this, guid) == 0
+    }
 
     private fun shareFullContentAsync(guid: String) {
+        if (isFreeConfigLocked(guid)) {
+            toastError(R.string.toast_failure)
+            return
+        }
         lifecycleScope.launch(Dispatchers.IO) {
             val result = AngConfigManager.shareFullContent2Clipboard(this@MainActivity, guid)
             withContext(Dispatchers.Main) {
@@ -368,7 +375,13 @@ class MainActivity : HelperBaseComponentActivity() {
         }
     }
 
+    private fun isFreeConfigLocked(guid: String): Boolean {
+        if (FreeSubscription.isFree(mainViewModel.uiState.value.selectedGroupId)) return true
+        return FreeSubscription.isFree(MmkvManager.decodeServerConfig(guid)?.subscriptionId)
+    }
+
     private fun editServer(guid: String, profile: ProfileItem) {
+        if (isFreeConfigLocked(guid) || FreeSubscription.isFree(profile.subscriptionId)) return
         val activityClass = when (profile.configType) {
             EConfigType.CUSTOM -> ServerCustomConfigActivity::class.java
             EConfigType.POLICYGROUP -> ServerGroupActivity::class.java

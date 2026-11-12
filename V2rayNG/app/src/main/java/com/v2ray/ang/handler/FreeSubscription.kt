@@ -13,6 +13,21 @@ object FreeSubscription {
 
     fun isFree(id: String?): Boolean = id == AppConfig.FREE_SUBSCRIPTION_ID
 
+    /**
+     * Free-group configs stay on this device. They are omitted from sharing, clipboard export,
+     * and any guid that is either tagged with the free subscription or listed in that group.
+     */
+    fun blocksExport(subscriptionId: String?, listedInFreeGroup: Boolean = false): Boolean =
+        isFree(subscriptionId) || listedInFreeGroup
+
+    fun exportableGuids(
+        guids: List<String>,
+        freeGroupGuids: Set<String>,
+        subscriptionIdOf: (String) -> String?,
+    ): List<String> = guids.filterNot { guid ->
+        blocksExport(subscriptionIdOf(guid), guid in freeGroupGuids)
+    }
+
     /** Locks the fields the user must not change. Other fields, such as last update, stay. */
     fun pin(item: SubscriptionItem) {
         item.remarks = REMARKS

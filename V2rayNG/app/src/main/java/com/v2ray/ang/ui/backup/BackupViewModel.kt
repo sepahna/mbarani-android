@@ -2,12 +2,12 @@ package com.v2ray.ang.ui.backup
 
 import android.app.Application
 import android.net.Uri
-import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.WebDavConfig
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsChangeManager
+import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.WebDavManager
 import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.ui.base.ViewModelEvent
@@ -173,7 +173,7 @@ class BackupViewModel(application: Application) : BaseViewModel(application) {
         val backupDir = cacheDir.absolutePath + "/$folderName"
         val outputZipFilePath = "${cacheDir.absolutePath}/$folderName.zip"
 
-        val count = MMKV.backupAllToDirectory(backupDir)
+        val count = MmkvManager.backupAllExceptFreeCategory(backupDir)
         if (count <= 0) {
             return Pair(false, "")
         }
@@ -193,7 +193,8 @@ class BackupViewModel(application: Application) : BaseViewModel(application) {
                     return@withContext false
                 }
 
-                val count = MMKV.restoreAllFromDirectory(backupDir.absolutePath)
+                val count = MmkvManager.restoreAllPreservingFreeCategory(backupDir.absolutePath)
+                SettingsManager.ensureFreeSubscription()
                 SettingsChangeManager.makeSetupGroupTab()
                 SettingsChangeManager.makeRestartService()
                 count > 0

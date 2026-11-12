@@ -245,6 +245,7 @@ private fun ServerListPage(
         } else null
 
         LocateTargetEffect(locateTarget, rows, gridState, onLocateHandled)
+        val allowShareAndEdit = !FreeSubscription.isFree(groupId)
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -260,6 +261,7 @@ private fun ServerListPage(
                         row = row,
                         isSelected = row.guid == selectedGuid,
                         doubleColumnDisplay = true,
+                        allowShareAndEdit = allowShareAndEdit,
                         actions = actions
                     )
                 }
@@ -289,6 +291,7 @@ private fun ServerListPage(
         } else null
 
         LocateTargetEffect(locateTarget, rows, listState, onLocateHandled)
+        val allowShareAndEdit = !FreeSubscription.isFree(groupId)
 
         LazyColumn(
             state = listState,
@@ -310,6 +313,7 @@ private fun ServerListPage(
                             ServerItemRow(
                                 row = row,
                                 isSelected = row.guid == selectedGuid,
+                                allowShareAndEdit = allowShareAndEdit,
                                 actions = actions
                             )
                         }
@@ -319,6 +323,7 @@ private fun ServerListPage(
                     ServerItemRow(
                         row = row,
                         isSelected = row.guid == selectedGuid,
+                        allowShareAndEdit = allowShareAndEdit,
                         actions = actions
                     )
                     ItemDivider()
@@ -364,12 +369,14 @@ private fun LocateTargetEffect(
 private fun ServerItemRow(
     row: ServerRowUiModel,
     isSelected: Boolean,
+    allowShareAndEdit: Boolean,
     actions: ServerRowActions
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
         doubleColumnDisplay = false,
+        allowShareAndEdit = allowShareAndEdit,
         actions = actions
     )
 }
@@ -379,6 +386,7 @@ private fun ServerItemColumn(
     row: ServerRowUiModel,
     isSelected: Boolean,
     doubleColumnDisplay: Boolean,
+    allowShareAndEdit: Boolean,
     actions: ServerRowActions
 ) {
     Column {
@@ -386,6 +394,7 @@ private fun ServerItemColumn(
             row = row,
             isSelected = isSelected,
             doubleColumnDisplay = doubleColumnDisplay,
+            allowShareAndEdit = allowShareAndEdit,
             actions = actions
         )
         ItemDivider()
@@ -397,6 +406,7 @@ private fun ServerListItem(
     row: ServerRowUiModel,
     isSelected: Boolean,
     doubleColumnDisplay: Boolean,
+    allowShareAndEdit: Boolean,
     actions: ServerRowActions
 ) {
     val testResult = when {
@@ -463,19 +473,21 @@ private fun ServerListItem(
                             Modifier.size(24.dp)
                         )
                     }
-                    IconButton(onClick = { actions.share(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_share_24dp),
-                            stringResource(R.string.title_configuration_share),
-                            Modifier.size(24.dp)
-                        )
-                    }
-                    IconButton(onClick = { actions.edit(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_edit_24dp),
-                            stringResource(R.string.acc_edit),
-                            Modifier.size(24.dp)
-                        )
+                    if (allowShareAndEdit) {
+                        IconButton(onClick = { actions.share(row.guid, row.profile) }, Modifier.size(36.dp)) {
+                            Icon(
+                                painterResource(R.drawable.ic_share_24dp),
+                                stringResource(R.string.title_configuration_share),
+                                Modifier.size(24.dp)
+                            )
+                        }
+                        IconButton(onClick = { actions.edit(row.guid, row.profile) }, Modifier.size(36.dp)) {
+                            Icon(
+                                painterResource(R.drawable.ic_edit_24dp),
+                                stringResource(R.string.acc_edit),
+                                Modifier.size(24.dp)
+                            )
+                        }
                     }
                     IconButton(onClick = { actions.remove(row.guid, row.remarks) }, Modifier.size(36.dp)) {
                         Icon(

@@ -45,4 +45,26 @@ class FreeSubscriptionTest {
         assertEquals(AppConfig.SUBSCRIPTION_MIN_INTERVAL_MINUTES, item.updateInterval)
         assertEquals(42L, item.lastUpdated)
     }
+
+    @Test
+    fun exportDropsFreeGroupConfigsAndKeepsTheOthers() {
+        val freeId = AppConfig.FREE_SUBSCRIPTION_ID
+        val exported = FreeSubscription.exportableGuids(
+            guids = listOf("paid", "tagged", "listed", "other"),
+            freeGroupGuids = setOf("listed"),
+            subscriptionIdOf = { guid -> if (guid == "tagged") freeId else "custom" },
+        )
+        assertEquals(listOf("paid", "other"), exported)
+    }
+
+    @Test
+    fun exportOfOnlyFreeConfigsIsEmpty() {
+        val freeId = AppConfig.FREE_SUBSCRIPTION_ID
+        val exported = FreeSubscription.exportableGuids(
+            guids = listOf("a", "b"),
+            freeGroupGuids = setOf("a", "b"),
+            subscriptionIdOf = { freeId },
+        )
+        assertTrue(exported.isEmpty())
+    }
 }

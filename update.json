@@ -1,5 +1,5 @@
 {
-  "version": "2.3.39",
-  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.39/barani_2.3.39_universal.apk",
-  "notes": "تغییر نام فقط برای دسته‌بندی است، با نگه‌داشتن طولانی. آیکون جابه‌جایی و تغییر نام از روی کانفیگ برداشته شد. تاریخ ورود کنار پروتکل، شمسی و میلادی، مانده است.\n\nRename is only for categories, from a long press. Move and rename icons were removed from each config. The import date stays beside the protocol in Jalali and Gregorian."
+  "version": "2.3.40",
+  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.40/barani_2.3.40_universal.apk",
+  "notes": "کانفیگ‌های دسته رایگان قابل اشتراک، ویرایش و خروجی نیستند و داخل بکاپ نمی‌آیند.\n\nFree-category configs cannot be shared, edited, or exported, and they are left out of backup."
 }

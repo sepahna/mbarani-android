@@ -63,6 +63,7 @@ object AngConfigManager {
      */
     fun share2Clipboard(context: Context, guid: String): Int {
         try {
+            if (isFreeConfig(guid)) return -1
             val conf = shareConfig(guid)
             if (TextUtils.isEmpty(conf)) {
                 return -1
@@ -113,6 +114,7 @@ object AngConfigManager {
      */
     fun share2QRCode(guid: String): Bitmap? {
         try {
+            if (isFreeConfig(guid)) return null
             val conf = shareConfig(guid)
             if (TextUtils.isEmpty(conf)) {
                 return null
@@ -134,7 +136,7 @@ object AngConfigManager {
      */
     fun shareFullContent2Clipboard(context: Context, guid: String?): Int {
         try {
-            if (guid == null) return -1
+            if (guid == null || isFreeConfig(guid)) return -1
             val result = CoreConfigManager.getV2rayConfig(context, guid)
             if (result.status) {
                 Utils.setClipboard(context, result.content)
@@ -154,8 +156,15 @@ object AngConfigManager {
      * @param guid The GUID of the configuration.
      * @return The configuration string.
      */
+    private fun isFreeConfig(guid: String): Boolean {
+        val config = MmkvManager.decodeServerConfig(guid)
+        val listedInFreeGroup = MmkvManager.decodeServerList(AppConfig.FREE_SUBSCRIPTION_ID).contains(guid)
+        return FreeSubscription.blocksExport(config?.subscriptionId, listedInFreeGroup)
+    }
+
     private fun shareConfig(guid: String): String {
         try {
+            if (isFreeConfig(guid)) return ""
             val config = MmkvManager.decodeServerConfig(guid) ?: return ""
 
             return config.configType.protocolScheme + when (config.configType) {

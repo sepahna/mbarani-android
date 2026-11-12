@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.handler.FreeSubscription
 import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.ui.compose.ConfirmDialog
@@ -139,6 +140,8 @@ fun MainScreen(
             guid = guid,
             profile = profile,
             more = more,
+            allowShareAndEdit = !FreeSubscription.isFree(profile.subscriptionId) &&
+                !FreeSubscription.isFree(uiState.selectedGroupId),
             onDismiss = { shareTarget = null },
             onAction = onAction,
             onRemove = removeServer,
@@ -305,9 +308,15 @@ fun MainScreen(
                             lazyListStates = lazyListStates,
                             lazyGridStates = lazyGridStates,
                             onSelectServer = { guid -> onAction(MainAction.SelectServer(guid)) },
-                            onEditServer = { guid, profile -> onAction(MainAction.EditServer(guid, profile)) },
+                            onEditServer = { guid, profile ->
+                                if (!FreeSubscription.isFree(group.id)) {
+                                    onAction(MainAction.EditServer(guid, profile))
+                                }
+                            },
                             onShareServer = { guid, profile ->
-                                shareTarget = Triple(guid, profile, false)
+                                if (!FreeSubscription.isFree(group.id)) {
+                                    shareTarget = Triple(guid, profile, false)
+                                }
                             },
                             onMoreServer = { guid, profile ->
                                 shareTarget = Triple(guid, profile, true)

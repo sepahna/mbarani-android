@@ -12,6 +12,7 @@ import com.tencent.mmkv.MMKV
 import com.tencent.mmkv.MMKVHandler
 import com.tencent.mmkv.MMKVLogLevel
 import com.tencent.mmkv.MMKVRecoverStrategic
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.DEFAULT_SUBSCRIPTION_ID
 import com.v2ray.ang.AppConfig.PREF_IS_BOOTED
 import com.v2ray.ang.AppConfig.PREF_ROUTING_RULESET
@@ -726,6 +727,124 @@ object MmkvManager {
             // Keep the first occurrence so a damaged index cannot produce duplicate Compose keys.
             JsonUtil.fromJsonSafe(json, Array<String>::class.java)?.distinct()?.toMutableList() ?: mutableListOf()
         }
+    }
+
+    /**
+     * Copies every MMKV store except the built-in free group, then puts that group back.
+     * The free group's configs must not leave the device inside a backup file.
+     */
+    fun backupAllExceptFreeCategory(dstDir: String): Long {
+        val snapshot = withProfileIndexLock {
+            val captured = captureFreeCategory()
+            stripFreeCategory()
+            syncProfileStores()
+            captured
+        }
+        return try {
+            MMKV.backupAllToDirectory(dstDir)
+        } finally {
+            withProfileIndexLock { writeFreeCategory(snapshot) }
+        }
+    }
+
+    /**
+     * Restores a backup, then puts the on-device free group back so a backup cannot
+     * import or erase it.
+     */
+    fun restoreAllPreservingFreeCategory(srcDir: String): Long {
+        val snapshot = withProfileIndexLock { captureFreeCategory() }
+        val count = MMKV.restoreAllFromDirectory(srcDir)
+        withProfileIndexLock {
+            stripFreeCategory()
+            writeFreeCategory(snapshot)
+        }
+        return count
+    }
+
+    private class FreeCategorySnapshot(
+        val subscriptionJson: String?,
+        val listIndex: Int,
+        val serverIds: List<String>,
+        val profiles: Map<String, String>,
+        val rawConfigs: Map<String, String>,
+        val affiliations: Map<String, String>,
+        val selectedGuid: String?,
+    )
+
+    private fun freeServerGuids(): List<String> {
+        val ordered = decodeServerList(AppConfig.FREE_SUBSCRIPTION_ID)
+        val extras = profileFullStorage.allKeys().orEmpty().filter { guid ->
+            guid !in ordered && FreeSubscription.isFree(decodeServerConfig(guid)?.subscriptionId)
+        }
+        return ordered + extras
+    }
+
+    private fun captureFreeCategory(): FreeCategorySnapshot {
+        val id = AppConfig.FREE_SUBSCRIPTION_ID
+        val serverIds = freeServerGuids()
+        return FreeCategorySnapshot(
+            subscriptionJson = subStorage.decodeString(id),
+            listIndex = decodeSubsList().indexOf(id),
+            serverIds = serverIds,
+            profiles = keyedPayloads(profileFullStorage, serverIds),
+            rawConfigs = keyedPayloads(serverRawStorage, serverIds),
+            affiliations = keyedPayloads(serverAffStorage, serverIds),
+            selectedGuid = getSelectServer()?.takeIf { it in serverIds },
+        )
+    }
+
+    private fun keyedPayloads(storage: MMKV, guids: List<String>): Map<String, String> =
+        guids.mapNotNull { guid -> storage.decodeString(guid)?.let { guid to it } }.toMap()
+
+    private fun stripFreeCategory() {
+        val id = AppConfig.FREE_SUBSCRIPTION_ID
+        val serverIds = freeServerGuids()
+        if (serverIds.isNotEmpty()) {
+            val keys = serverIds.toTypedArray()
+            profileFullStorage.removeValuesForKeys(keys)
+            serverAffStorage.removeValuesForKeys(keys)
+            serverRawStorage.removeValuesForKeys(keys)
+        }
+        val selected = getSelectServer()
+        if (selected != null && selected in serverIds) {
+            mainStorage.remove(KEY_SELECTED_SERVER)
+        }
+        mainStorage.remove(serverListKey(id))
+        subStorage.remove(id)
+        val subs = decodeSubsList()
+        if (subs.remove(id)) encodeSubsList(subs)
+    }
+
+    private fun writeFreeCategory(snapshot: FreeCategorySnapshot) {
+        val id = AppConfig.FREE_SUBSCRIPTION_ID
+        snapshot.profiles.forEach { (guid, json) -> profileFullStorage.encode(guid, json) }
+        snapshot.rawConfigs.forEach { (guid, json) -> serverRawStorage.encode(guid, json) }
+        snapshot.affiliations.forEach { (guid, json) -> serverAffStorage.encode(guid, json) }
+        if (snapshot.listIndex >= 0 || snapshot.serverIds.isNotEmpty()) {
+            persistServerList(snapshot.serverIds, id)
+        }
+        snapshot.subscriptionJson?.let { subStorage.encode(id, it) }
+        if (snapshot.listIndex >= 0) {
+            val subs = decodeSubsList()
+            if (!subs.contains(id)) {
+                subs.add(snapshot.listIndex.coerceAtMost(subs.size), id)
+                encodeSubsList(subs)
+            }
+        }
+        val selected = snapshot.selectedGuid
+        if (selected != null && getSelectServer().isNullOrBlank()) {
+            mainStorage.encode(KEY_SELECTED_SERVER, selected)
+        }
+    }
+
+    private fun syncProfileStores() {
+        mainStorage.sync()
+        profileFullStorage.sync()
+        serverRawStorage.sync()
+        serverAffStorage.sync()
+        subStorage.sync()
+        settingsStorage.sync()
+        assetStorage.sync()
     }
 
     //endregion

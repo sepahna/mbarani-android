@@ -312,6 +312,7 @@ class MainViewModel(
             is MainAction.ImportBatchConfig -> importBatchConfig(action.configText)
             MainAction.LocateHandled -> consumeLocateTarget()
             is MainAction.ShareQRCode -> {
+                if (isFreeServer(action.guid)) return
                 val bitmap = dataSource.share2QRCode(action.guid)
                 _uiState.update { it.copy(shareQRCodeBitmap = bitmap) }
             }
@@ -625,15 +626,27 @@ class MainViewModel(
         }
     }
 
+    private fun isFreeServer(guid: String): Boolean {
+        val listedInFreeGroup = guid in dataSource.getServerGuidList(AppConfig.FREE_SUBSCRIPTION_ID)
+        return FreeSubscription.blocksExport(
+            dataSource.decodeServerConfig(guid)?.subscriptionId,
+            listedInFreeGroup,
+        )
+    }
+
     private fun exportAllAsync() {
         launchLoading {
             withContext(ioDispatcher) {
                 try {
                     val groupId = uiState.value.selectedGroupId
-                    val list = if (groupId.isEmpty() && keywordFilter.isEmpty()) {
+                    val source = if (groupId.isEmpty() && keywordFilter.isEmpty()) {
                         dataSource.getServerGuidList("")
                     } else {
                         currentServers().map { it.guid }
+                    }
+                    val freeGroupGuids = dataSource.getServerGuidList(AppConfig.FREE_SUBSCRIPTION_ID).toSet()
+                    val list = FreeSubscription.exportableGuids(source, freeGroupGuids) { guid ->
+                        dataSource.decodeServerConfig(guid)?.subscriptionId
                     }
                     val ret = dataSource.shareNonCustomConfigsToClipboard(list)
                     if (ret > 0) {
