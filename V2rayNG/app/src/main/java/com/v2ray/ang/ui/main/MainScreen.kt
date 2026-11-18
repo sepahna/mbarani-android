@@ -154,6 +154,7 @@ fun MainScreen(
         GroupTabActionDialog(
             name = group.remarks,
             allowRename = group.id != AppConfig.FREE_SUBSCRIPTION_ID,
+            allowEdit = group.id != AppConfig.FREE_SUBSCRIPTION_ID,
             allowDelete = group.id != AppConfig.FREE_SUBSCRIPTION_ID,
             onMove = {
                 tabMenu = null
@@ -162,6 +163,10 @@ fun MainScreen(
             onRename = {
                 tabMenu = null
                 renameGroup = GroupRenameTarget(group.id, group.remarks)
+            },
+            onEdit = {
+                tabMenu = null
+                onAction(MainAction.EditSubscription(group.id))
             },
             onDelete = {
                 tabMenu = null

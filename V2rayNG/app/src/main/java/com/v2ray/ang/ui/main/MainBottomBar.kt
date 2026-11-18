@@ -121,6 +121,17 @@ fun MainBottomBar(
                 )
             }
             FloatingActionButton(
+                onClick = { onAction(MainAction.UpdateSubscriptions) },
+                containerColor = if (isDarkTheme) Color(0xFF1B3A4B) else Color(0xFF24566A)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_refresh_24dp),
+                    contentDescription = stringResource(R.string.acc_update_current_subscription),
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            FloatingActionButton(
                 onClick = {
                     if (!isRunning) {
                         scope.launch {
@@ -214,8 +225,8 @@ private fun ConnectionGuideDialog(onDismiss: () -> Unit) {
                         )
                     }
                 }
-                GuideCard("۱", R.string.guide_sub_title, R.string.guide_sub_body)
-                GuideCard("۲", R.string.guide_config_title, R.string.guide_config_body)
+                GuideCard("۱", R.string.guide_config_title, R.string.guide_config_body)
+                GuideCard("۲", R.string.guide_sub_title, R.string.guide_sub_body)
                 GuideCard("۳", R.string.guide_update_title, R.string.guide_update_body)
                 Button(
                     onClick = onDismiss,

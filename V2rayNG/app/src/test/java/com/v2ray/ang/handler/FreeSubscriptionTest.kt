@@ -1,6 +1,7 @@
 package com.v2ray.ang.handler
 
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.entities.SubscriptionItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -66,5 +67,25 @@ class FreeSubscriptionTest {
             subscriptionIdOf = { freeId },
         )
         assertTrue(exported.isEmpty())
+    }
+
+    @Test
+    fun freeCheckShowsConfigsOnlyWhenTheFeedHasSome() {
+        assertEquals(
+            FreeSubscription.ConfigCheck.Arrived,
+            FreeSubscription.interpretCheck(SubscriptionUpdateResult(configCount = 2, successCount = 1))
+        )
+        assertEquals(
+            FreeSubscription.ConfigCheck.NothingNew,
+            FreeSubscription.interpretCheck(SubscriptionUpdateResult(successCount = 1))
+        )
+        assertEquals(
+            FreeSubscription.ConfigCheck.Failed,
+            FreeSubscription.interpretCheck(SubscriptionUpdateResult(failureCount = 1))
+        )
+        assertEquals(
+            FreeSubscription.ConfigCheck.Failed,
+            FreeSubscription.interpretCheck(SubscriptionUpdateResult())
+        )
     }
 }

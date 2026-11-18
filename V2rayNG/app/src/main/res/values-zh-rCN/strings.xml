@@ -13,9 +13,13 @@
     <string name="group_tab_rename">重命名</string>
     <string name="group_tab_rename_title">重命名分类</string>
     <string name="group_tab_rename_label">名称</string>
+    <string name="group_tab_edit">编辑</string>
     <string name="free_group_summary">从网站更新。网站上删除的配置会在下次更新时从此处删除。</string>
     <string name="free_group_empty_title">即将推出</string>
     <string name="free_group_empty_message">请前往网站购买。</string>
+    <string name="free_group_check">检查新的免费配置</string>
+    <string name="free_group_check_empty">没有新内容。请稍后再检查。</string>
+    <string name="acc_update_current_subscription">更新此分类的订阅</string>
     <string name="migration_fail">数据迁移失败啦!</string>
     <string name="pull_down_to_refresh">请下拉刷新!</string>
 

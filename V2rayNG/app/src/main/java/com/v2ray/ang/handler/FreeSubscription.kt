@@ -1,6 +1,7 @@
 package com.v2ray.ang.handler
 
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.entities.SubscriptionItem
 import java.util.Base64
 
@@ -10,6 +11,27 @@ import java.util.Base64
  */
 object FreeSubscription {
     const val REMARKS = "رایگان"
+
+    enum class ConfigCheck {
+        /** The feed contained at least one config, so the list should replace the empty state. */
+        Arrived,
+
+        /** The feed was read and it still has no config. */
+        NothingNew,
+
+        /** The feed could not be read. */
+        Failed,
+    }
+
+    /**
+     * A manual check of the free feed. An explicit empty list is "nothing new"; a parsed
+     * config is ready to show; anything else is a failed refresh.
+     */
+    fun interpretCheck(result: SubscriptionUpdateResult): ConfigCheck = when {
+        result.configCount > 0 -> ConfigCheck.Arrived
+        result.successCount > 0 && result.failureCount == 0 -> ConfigCheck.NothingNew
+        else -> ConfigCheck.Failed
+    }
 
     fun isFree(id: String?): Boolean = id == AppConfig.FREE_SUBSCRIPTION_ID
 

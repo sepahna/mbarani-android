@@ -13,9 +13,13 @@
     <string name="group_tab_rename">Переименовать</string>
     <string name="group_tab_rename_title">Переименовать категорию</string>
     <string name="group_tab_rename_label">Название</string>
+    <string name="group_tab_edit">Изменить</string>
     <string name="free_group_summary">Обновляется с сайта. Конфиг, удалённый там, удаляется здесь при следующем обновлении.</string>
     <string name="free_group_empty_title">Скоро</string>
     <string name="free_group_empty_message">Для покупки перейдите на сайт.</string>
+    <string name="free_group_check">Проверить новый бесплатный конфиг</string>
+    <string name="free_group_check_empty">Ничего нового нет. Проверьте позже.</string>
+    <string name="acc_update_current_subscription">Обновить подписку этой категории</string>
     <string name="migration_fail">Перенос данных не выполнен!</string>
     <string name="pull_down_to_refresh">Потяните вниз для обновления!</string>
 

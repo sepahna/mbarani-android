@@ -1,5 +1,5 @@
 {
-  "version": "2.3.40",
-  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.40/barani_2.3.40_universal.apk",
-  "notes": "کانفیگ‌های دسته رایگان قابل اشتراک، ویرایش و خروجی نیستند و داخل بکاپ نمی‌آیند.\n\nFree-category configs cannot be shared, edited, or exported, and they are left out of backup."
+  "version": "2.3.41",
+  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.41/barani_2.3.41_universal.apk",
+  "notes": "دکمه بررسی کانفیگ رایگان، میانبر به‌روزرسانی اشتراک، آموزش وارد کردن کانفیگ، و ویرایش دسته‌بندی از لمس طولانی.\n\nCheck for a free config, refresh the current subscription from the bottom bar, a config-import guide, and edit a category from a long press."
 }

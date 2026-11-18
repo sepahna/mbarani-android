@@ -302,6 +302,7 @@ class MainViewModel(
             is MainAction.SortServers -> sortServersAsync(action.mode)
             MainAction.UpdateSubscriptions -> importConfigViaSub(uiState.value.selectedGroupId)
             is MainAction.UpdateGroupSubscription -> importConfigViaSub(action.groupId)
+            MainAction.CheckFreeConfigs -> checkFreeConfigs()
             MainAction.ExportAll -> exportAllAsync()
             is MainAction.SelectGroup -> subscriptionIdChanged(action.groupId)
             is MainAction.SelectServer -> updateSelectedGuid(action.guid)
@@ -334,7 +335,8 @@ class MainViewModel(
             is MainAction.ShareClipboard,
             is MainAction.ShareFullContent,
             is MainAction.OpenSubscriptionLink,
-            is MainAction.OpenSite -> {
+            is MainAction.OpenSite,
+            is MainAction.EditSubscription -> {
                 // Handled by Activity via its onAction lambda
             }
         }
@@ -583,6 +585,40 @@ class MainViewModel(
             val item = withContext(ioDispatcher) { dataSource.getSubscriptionItem(subId) } ?: return@launch
             if (!item.enabled || item.url.isBlank()) return@launch
             importConfigViaSub(subId)
+        }
+    }
+
+    private fun checkFreeConfigs() {
+        launchLoading {
+            withContext(ioDispatcher) {
+                try {
+                    val item = dataSource.getSubscriptionItem(AppConfig.FREE_SUBSCRIPTION_ID)
+                    if (item == null) {
+                        toast(R.string.title_update_subscription_no_subscription)
+                        return@withContext
+                    }
+                    val result = dataSource.updateConfigViaSub(
+                        SubscriptionCache(AppConfig.FREE_SUBSCRIPTION_ID, item)
+                    )
+                    when (FreeSubscription.interpretCheck(result)) {
+                        FreeSubscription.ConfigCheck.Arrived -> {
+                            setupGroupTab(forceRefresh = true)
+                            refreshSelectedGuid()
+                        }
+
+                        FreeSubscription.ConfigCheck.NothingNew ->
+                            toast(R.string.free_group_check_empty)
+
+                        FreeSubscription.ConfigCheck.Failed ->
+                            toastError(R.string.toast_failure)
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (e: Exception) {
+                    LogUtil.e(AppConfig.TAG, "Free config check failed", e)
+                    toastError(R.string.toast_failure)
+                }
+            }
         }
     }
 

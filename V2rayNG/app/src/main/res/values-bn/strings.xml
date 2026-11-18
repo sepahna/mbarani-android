@@ -13,9 +13,13 @@
     <string name="group_tab_rename">নাম পরিবর্তন</string>
     <string name="group_tab_rename_title">বিভাগের নাম পরিবর্তন</string>
     <string name="group_tab_rename_label">নাম</string>
+    <string name="group_tab_edit">সম্পাদনা</string>
     <string name="free_group_summary">সাইট থেকে আপডেট হয়। সেখানে মুছে ফেলা কনফিগ পরবর্তী আপডেটে এখানেও মুছে যায়।</string>
     <string name="free_group_empty_title">শীঘ্রই আসছে</string>
     <string name="free_group_empty_message">কেনাকাটার জন্য ওয়েবসাইটে যান।</string>
+    <string name="free_group_check">নতুন ফ্রি কনফিগ দেখুন</string>
+    <string name="free_group_check_empty">নতুন কিছু নেই। পরে আবার দেখুন।</string>
+    <string name="acc_update_current_subscription">এই বিভাগের সাবস্ক্রিপশন আপডেট করুন</string>
     <string name="migration_fail">ডেটা স্থানান্তর ব্যর্থ!</string>
     <string name="pull_down_to_refresh">রিফ্রেশ করতে নিচে টানুন!</string>
 

@@ -13,9 +13,13 @@
     <string name="group_tab_rename">Adını dəyiş</string>
     <string name="group_tab_rename_title">Kateqoriyanın adını dəyiş</string>
     <string name="group_tab_rename_label">Ad</string>
+    <string name="group_tab_edit">Redaktə et</string>
     <string name="free_group_summary">Saytdan yenilənir. Orada silinən konfiq burada növbəti yeniləmədə silinir.</string>
     <string name="free_group_empty_title">Tezliklə</string>
     <string name="free_group_empty_message">Alış üçün sayta müraciət edin.</string>
+    <string name="free_group_check">Yeni pulsuz konfiqi yoxla</string>
+    <string name="free_group_check_empty">Yeni heç nə yoxdur. Zəhmət olmasa sonra yenidən yoxlayın.</string>
+    <string name="acc_update_current_subscription">Bu kateqoriyanın abunəliyini yenilə</string>
     <string name="migration_fail">Məlumatların köçürülməsi uğursuz oldu!</string>
     <string name="pull_down_to_refresh">Yeniləmək üçün aşağı çəkin!</string>
 

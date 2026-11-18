@@ -13,9 +13,13 @@
     <string name="group_tab_rename">تغيير الاسم</string>
     <string name="group_tab_rename_title">تغيير اسم التصنيف</string>
     <string name="group_tab_rename_label">الاسم</string>
+    <string name="group_tab_edit">تعديل</string>
     <string name="free_group_summary">يتم تحديثه من الموقع. أي إعداد يُحذف هناك يُحذف هنا في التحديث التالي.</string>
     <string name="free_group_empty_title">قريبًا</string>
     <string name="free_group_empty_message">لشراء الاشتراك، راجع الموقع.</string>
+    <string name="free_group_check">التحقق من إعداد مجاني جديد</string>
+    <string name="free_group_check_empty">لا يوجد شيء جديد. يرجى التحقق مرة أخرى لاحقًا.</string>
+    <string name="acc_update_current_subscription">تحديث اشتراك هذا التصنيف</string>
     <string name="migration_fail">فشلت عملية ترحيل البيانات!</string>
     <string name="pull_down_to_refresh">اسحب لأسفل للتحديث!</string>
 

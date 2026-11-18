@@ -1,9 +1,13 @@
 تغییرات این نسخه
-- کانفیگ‌های دسته رایگان دیگر آیکون اشتراک‌گذاری و ویرایش ندارند
-- خروجی گرفتن به کلیپ‌بورد، کانفیگ‌های رایگان را شامل نمی‌شود
-- دسته رایگان داخل بکاپ و بازیابی ذخیره نمی‌شود
+- در دسته رایگان، وقتی کانفیگی نیست، زیر خرید دکمه «بررسی کانفیگ رایگان جدید» اضافه شد
+- اگر کانفیگ جدیدی باشد در فهرست قرار می‌گیرد؛ اگر نباشد پیام «چیز جدیدی وجود ندارد» نشان داده می‌شود
+- کنار علامت سؤال پایین صفحه، آیکون به‌روزرسانی اشتراک همان دسته‌بندی اضافه شد
+- آموزش وارد کردن کانفیگ به راهنمای علامت سؤال اضافه شد
+- با نگه‌داشتن روی دسته‌بندی، گزینه ویرایش اشتراک اضافه شد
 
 What's new
-- Free-category configs no longer show share or edit icons
-- Export to clipboard leaves free configs out
-- The free category is not included in backup and restore
+- The empty free category has a button under Buy that checks for a new free config
+- A new config is added to the list; otherwise the app says nothing new is available
+- A refresh icon next to the question mark updates the current category’s subscription
+- The question-mark guide now explains how to import a single config
+- Long-pressing a category includes Edit, which opens that subscription

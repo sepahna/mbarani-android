@@ -156,6 +156,10 @@ class MainActivity : HelperBaseComponentActivity() {
                     MainAction.AddSubscription -> subscriptionEditorLauncher.launch(
                         Intent(this, SubEditActivity::class.java)
                     )
+                    is MainAction.EditSubscription -> subscriptionEditorLauncher.launch(
+                        Intent(this, SubEditActivity::class.java)
+                            .putExtra("subId", action.groupId)
+                    )
                     MainAction.ImportConfigLocal -> importConfigLocal()
                     is MainAction.ImportManually -> importManually(action.type)
                     MainAction.RestartService -> LauncherManager.restartServiceOrStart(this, ::requestServiceStart)

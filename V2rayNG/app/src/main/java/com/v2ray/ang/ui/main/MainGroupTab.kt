@@ -256,9 +256,11 @@ private fun GroupTabItem(
 internal fun GroupTabActionDialog(
     name: String,
     allowRename: Boolean,
+    allowEdit: Boolean,
     allowDelete: Boolean,
     onMove: () -> Unit,
     onRename: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -283,6 +285,14 @@ internal fun GroupTabActionDialog(
                     TextButton(onClick = onRename, modifier = Modifier.fillMaxWidth()) {
                         Text(
                             stringResource(R.string.group_tab_rename),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+                if (allowEdit) {
+                    TextButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.group_tab_edit),
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

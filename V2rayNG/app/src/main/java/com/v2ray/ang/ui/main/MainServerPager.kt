@@ -29,6 +29,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -139,6 +140,7 @@ fun GroupPagerPage(
         if (FreeSubscription.isFree(groupId) && groupState.rows.isEmpty()) {
             FreeGroupEmptyState(
                 onOpenBuy = { onOpenLink("${AppConfig.SITE_URL}/plans") },
+                onCheckFree = { mainViewModel.onAction(MainAction.CheckFreeConfigs) },
                 contentPadding = listPadding
             )
         } else {
@@ -176,6 +178,7 @@ fun GroupPagerPage(
 @Composable
 private fun FreeGroupEmptyState(
     onOpenBuy: () -> Unit,
+    onCheckFree: () -> Unit,
     contentPadding: PaddingValues
 ) {
     Column(
@@ -206,6 +209,17 @@ private fun FreeGroupEmptyState(
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(stringResource(R.string.title_site_buy))
+        }
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onCheckFree,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.free_group_check),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

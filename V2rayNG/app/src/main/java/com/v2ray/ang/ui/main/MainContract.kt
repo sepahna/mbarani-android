@@ -48,6 +48,8 @@ sealed interface MainAction {
     data class SortServers(val mode: ServerSortMode) : MainAction
     data object UpdateSubscriptions : MainAction
     data class UpdateGroupSubscription(val groupId: String) : MainAction
+    data object CheckFreeConfigs : MainAction
+    data class EditSubscription(val groupId: String) : MainAction
     data object ExportAll : MainAction
 
     data object ImportQRcode : MainAction
