@@ -1,6 +1,11 @@
 package com.v2ray.ang.ui.main
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,8 +58,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.compose.AppDivider
 import com.v2ray.ang.ui.compose.colorFabActive
-import com.v2ray.ang.ui.compose.colorFabInactiveDark
-import com.v2ray.ang.ui.compose.colorFabInactiveLight
 import kotlinx.coroutines.launch
 
 @Composable
@@ -67,6 +70,11 @@ fun MainBottomBar(
     val scope = rememberCoroutineScope()
     val rotationAnim = remember { Animatable(0f) }
     var showGuide by remember { mutableStateOf(false) }
+    val powerColor by animateColorAsState(
+        targetValue = if (isRunning) Color(0xFF1B8A4A) else Color(0xFFC43838),
+        animationSpec = tween(durationMillis = 450),
+        label = "powerColor",
+    )
 
     LaunchedEffect(isRunning) {
         if (!isRunning) {
@@ -131,6 +139,10 @@ fun MainBottomBar(
                     modifier = Modifier.size(24.dp)
                 )
             }
+            Box(contentAlignment = Alignment.Center) {
+            if (isRunning) {
+                PowerPulse()
+            }
             FloatingActionButton(
                 onClick = {
                     if (!isRunning) {
@@ -143,9 +155,7 @@ fun MainBottomBar(
                     }
                     onAction(MainAction.ToggleService)
                 },
-                containerColor = if (isRunning) colorFabActive
-                else if (isDarkTheme) colorFabInactiveDark
-                else colorFabInactiveLight
+                containerColor = powerColor
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
@@ -169,11 +179,31 @@ fun MainBottomBar(
                     )
                 }
             }
+            }
         }
     }
     if (showGuide) {
         ConnectionGuideDialog(onDismiss = { showGuide = false })
     }
+}
+
+@Composable
+private fun PowerPulse() {
+    val pulse by rememberInfiniteTransition(label = "powerPulse").animateFloat(
+        initialValue = 1f,
+        targetValue = 1.14f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 900), RepeatMode.Reverse),
+        label = "powerPulseScale",
+    )
+    Box(
+        modifier = Modifier
+            .size(64.dp)
+            .graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+            }
+            .background(Color(0x331B8A4A), CircleShape)
+    )
 }
 
 @Composable

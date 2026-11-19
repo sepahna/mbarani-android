@@ -425,6 +425,15 @@
     <string name="connection_test_error_status_code">Xəta kodu: #%d</string>
     <string name="connection_connected">Qoşuldu. Bağlantını yoxlamaq üçün toxunun.</string>
     <string name="connection_not_connected">Qoşulmayıb</string>
+
+    <string name="home_line_direct">Sizin xətt</string>
+    <string name="home_line_vpn">VPN ilə</string>
+    <string name="home_line_unknown">IP yoxlanılır…</string>
+    <string name="home_line_unavailable">IP yoxdur</string>
+    <string name="home_speed_down">Yükləmə %1$s</string>
+    <string name="home_speed_up">Göndərmə %1$s</string>
+    <string name="home_traffic_session">Trafik %1$s</string>
+    <string name="home_line_summary">%1$s, %2$s, %3$s, %4$s, %5$s</string>
     <string name="connection_running_task_left">İcra olunan sınaqlar: %s</string>
 
     <string name="import_subscription_success">Abunəlik uğurla idxal edildi</string>

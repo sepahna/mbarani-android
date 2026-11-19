@@ -433,6 +433,15 @@
     <string name="connection_test_error_status_code">رمز الخطأ: #%d</string>
     <string name="connection_connected">متصل. اضغط للتحقق من الاتصال.</string>
     <string name="connection_not_connected">غير متصل</string>
+
+    <string name="home_line_direct">خطك</string>
+    <string name="home_line_vpn">عبر VPN</string>
+    <string name="home_line_unknown">جارٍ فحص عنوان IP…</string>
+    <string name="home_line_unavailable">عنوان IP غير متاح</string>
+    <string name="home_speed_down">التنزيل %1$s</string>
+    <string name="home_speed_up">الرفع %1$s</string>
+    <string name="home_traffic_session">حركة البيانات %1$s</string>
+    <string name="home_line_summary">%1$s، %2$s، %3$s، %4$s، %5$s</string>
     <string name="connection_running_task_left">الاختبارات قيد التشغيل: %s</string>
 
     <string name="import_subscription_success">تم استيراد الاشتراك بنجاح</string>

@@ -13,6 +13,7 @@ import com.v2ray.ang.dto.RealPingResult
 import com.v2ray.ang.dto.ServerSortMode
 import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.TestServiceMessage
+import com.v2ray.ang.dto.TrafficSample
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.ServerAffiliationInfo
 import com.v2ray.ang.dto.entities.SubscriptionCache
@@ -23,6 +24,7 @@ import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.handler.SpeedtestManager
 import com.v2ray.ang.handler.SubscriptionUpdater
 import com.v2ray.ang.helper.MessageHelper
 import com.v2ray.ang.util.LogUtil
@@ -75,6 +77,9 @@ class MainRepository(
                     requestId
                 )
                 AppConfig.MSG_MEASURE_CONFIG_CANCEL -> MainServiceEvent.MeasureConfigCancelled(requestId)
+                AppConfig.MSG_TRAFFIC_SAMPLE -> safeIntent
+                    .serializable<TrafficSample>("content")
+                    ?.let { MainServiceEvent.Traffic(it) }
 
                 else -> null
             }
@@ -254,6 +259,9 @@ class MainRepository(
             TestServiceMessage(key = AppConfig.MSG_MEASURE_CONFIG_CANCEL)
         )
     }
+
+    override fun lookupPublicEndpoint(throughProxy: Boolean): SpeedtestManager.RemoteEndpointInfo? =
+        if (throughProxy) SpeedtestManager.getRemoteIPInfo() else SpeedtestManager.getDirectIPInfo()
 
     override fun testCurrentServerRealPing(requestId: String) {
         MessageHelper.sendMsg2ServiceForResult(app, AppConfig.MSG_MEASURE_DELAY, requestId) { handled ->

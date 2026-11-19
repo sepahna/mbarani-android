@@ -13,10 +13,13 @@ import androidx.core.app.NotificationCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.core.CoreServiceManager
+import com.v2ray.ang.dto.TrafficSample
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.toSpeedString
+import com.v2ray.ang.helper.MessageHelper
 import com.v2ray.ang.helper.NotificationHelper
+import com.v2ray.ang.util.proxyTransferBytes
 import com.v2ray.ang.ui.main.MainActivity
 import com.v2ray.ang.util.LogUtil
 import kotlinx.coroutines.CoroutineScope
@@ -32,9 +35,11 @@ object NotificationManager {
     private const val NOTIFICATION_PENDING_INTENT_STOP_V2RAY = 1
     private const val NOTIFICATION_PENDING_INTENT_RESTART_V2RAY = 2
     private const val NOTIFICATION_ICON_THRESHOLD = 3000
-    private const val QUERY_INTERVAL_MS = 3000L
+    private const val QUERY_INTERVAL_MS = 1000L
 
     private var lastQueryTime = 0L
+    private var sessionUploadBytes = 0L
+    private var sessionDownloadBytes = 0L
     private var mBuilder: NotificationCompat.Builder? = null
     private var speedNotificationJob: Job? = null
     private var mNotificationManager: NotificationManager? = null
@@ -43,8 +48,12 @@ object NotificationManager {
      * Starts the speed notification.
      * @param currentConfig The current profile configuration.
      */
+    fun resetSessionTraffic() {
+        sessionUploadBytes = 0L
+        sessionDownloadBytes = 0L
+    }
+
     fun startSpeedNotification() {
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) != true) return
         if (speedNotificationJob != null || CoreServiceManager.isRunning() == false) return
 
         var lastZeroSpeed = false
@@ -239,26 +248,16 @@ object NotificationManager {
         }
         val sinceLastQueryInSeconds = sinceLastQueryIn / 1000.0
 
-        var proxyUplink = 0L
-        var proxyDownlink = 0L
+        val stats = CoreServiceManager.queryAllOutboundTrafficStats()
+        val (proxyUplink, proxyDownlink) = proxyTransferBytes(stats)
         var directUplink = 0L
         var directDownlink = 0L
 
-        CoreServiceManager.queryAllOutboundTrafficStats().forEach { stat ->
-            when {
-                stat.tag == AppConfig.TAG_DIRECT -> {
-                    when (stat.direction) {
-                        AppConfig.UPLINK -> directUplink += stat.value
-                        AppConfig.DOWNLINK -> directDownlink += stat.value
-                    }
-                }
-
-                // Accumulate stats for all proxy outbounds (including custom subscription tags)
-                stat.tag != AppConfig.TAG_BLOCKED -> {
-                    when (stat.direction) {
-                        AppConfig.UPLINK -> proxyUplink += stat.value
-                        AppConfig.DOWNLINK -> proxyDownlink += stat.value
-                    }
+        stats.forEach { stat ->
+            if (stat.tag == AppConfig.TAG_DIRECT) {
+                when (stat.direction) {
+                    AppConfig.UPLINK -> directUplink += stat.value
+                    AppConfig.DOWNLINK -> directDownlink += stat.value
                 }
             }
         }
@@ -266,7 +265,8 @@ object NotificationManager {
         val proxyTotal = proxyUplink + proxyDownlink
         val directTotal = directUplink + directDownlink
         val zeroSpeed = proxyTotal + directTotal == 0L
-        if (!zeroSpeed || !lastZeroSpeed) {
+        val speedEnabled = MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true
+        if (speedEnabled && (!zeroSpeed || !lastZeroSpeed)) {
             val text = StringBuilder()
             appendSpeedString(
                 text, AppConfig.TAG_PROXY,
@@ -280,6 +280,21 @@ object NotificationManager {
                 directDownlink / sinceLastQueryInSeconds
             )
             updateNotification(text.toString(), proxyTotal, directTotal)
+        }
+        sessionUploadBytes += proxyUplink
+        sessionDownloadBytes += proxyDownlink
+        getService()?.let { service ->
+            MessageHelper.sendMsg2UI(
+                service,
+                AppConfig.MSG_TRAFFIC_SAMPLE,
+                TrafficSample(
+                    uploadBytes = proxyUplink,
+                    downloadBytes = proxyDownlink,
+                    elapsedMillis = sinceLastQueryIn,
+                    sessionUploadBytes = sessionUploadBytes,
+                    sessionDownloadBytes = sessionDownloadBytes,
+                )
+            )
         }
         lastQueryTime = queryTime
         return zeroSpeed

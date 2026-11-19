@@ -1,13 +1,11 @@
 تغییرات این نسخه
-- در دسته رایگان، وقتی کانفیگی نیست، زیر خرید دکمه «بررسی کانفیگ رایگان جدید» اضافه شد
-- اگر کانفیگ جدیدی باشد در فهرست قرار می‌گیرد؛ اگر نباشد پیام «چیز جدیدی وجود ندارد» نشان داده می‌شود
-- کنار علامت سؤال پایین صفحه، آیکون به‌روزرسانی اشتراک همان دسته‌بندی اضافه شد
-- آموزش وارد کردن کانفیگ به راهنمای علامت سؤال اضافه شد
-- با نگه‌داشتن روی دسته‌بندی، گزینه ویرایش اشتراک اضافه شد
+- بالای دسته‌بندی‌ها کارت وضعیت اضافه شد: پرچم و آی‌پی خط خودت، و بعد از اتصال پرچم و آی‌پی خروجی وی‌پی‌ان
+- سرعت دانلود و آپلود، حجم همین اتصال، و نمودار کوچک ترافیک روی همان کارت نشان داده می‌شود
+- لمس کارت، آی‌پی و کشور را دوباره بررسی می‌کند
+- دکمه روشن و خاموش پایین صفحه خاموش قرمز و روشن سبز است
 
 What's new
-- The empty free category has a button under Buy that checks for a new free config
-- A new config is added to the list; otherwise the app says nothing new is available
-- A refresh icon next to the question mark updates the current category’s subscription
-- The question-mark guide now explains how to import a single config
-- Long-pressing a category includes Edit, which opens that subscription
+- A status card above the categories shows your line's flag and IP, then the VPN exit flag and IP after you connect
+- The same card shows download and upload speed, traffic for this connection, and a small graph
+- Tap the card to check the IP and country again
+- The power button is red while off and green while on

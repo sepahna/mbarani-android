@@ -425,6 +425,15 @@
     <string name="connection_test_error_status_code">کود ختا: #%d</string>
     <string name="connection_connected">منپیز هڌ. سی واجۊری کیلیک کوݩ.</string>
     <string name="connection_not_connected">منپیز نؽڌ</string>
+
+    <string name="home_line_direct">خط ایسا</string>
+    <string name="home_line_vpn">ز وی‌پی‌ان</string>
+    <string name="home_line_unknown">هونی واجۊری آی‌پی…</string>
+    <string name="home_line_unavailable">آی‌پی نادیار</string>
+    <string name="home_speed_down">دانلود %1$s</string>
+    <string name="home_speed_up">آپلود %1$s</string>
+    <string name="home_traffic_session">ترافیک %1$s</string>
+    <string name="home_line_summary">%1$s، %2$s، %3$s، %4$s، %5$s</string>
     <string name="connection_running_task_left">آزمایشا هونی ٱنجوم ابۊن: %s</string>
 
     <string name="import_subscription_success">اشتراک وا مووفقیت و من ٱوورده وابی</string>

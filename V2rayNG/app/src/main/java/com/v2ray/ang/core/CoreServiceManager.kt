@@ -178,6 +178,7 @@ object CoreServiceManager {
         }
 
         if (!isReload) {
+            NotificationManager.resetSessionTraffic()
             MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_SUCCESS, "")
         }
         NotificationManager.startSpeedNotification()

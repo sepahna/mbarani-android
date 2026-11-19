@@ -98,29 +98,16 @@ object CoreConfigManager {
 
         val json = JsonUtil.parseString(raw)?.takeIf { it.isJsonObject }?.asJsonObject ?: return result
 
-        // Inject or remove traffic statistics configuration based on user preference
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true) {
-            if (!json.has("stats")) {
-                json.add("stats", JsonObject())
-            }
-            if (!json.has("policy")) {
-                val policyObj = JsonObject()
-                val systemObj = JsonObject()
-                systemObj.addProperty("statsOutboundUplink", true)
-                systemObj.addProperty("statsOutboundDownlink", true)
-                policyObj.add("system", systemObj)
-                json.add("policy", policyObj)
-            }
-        } else {
-            json.remove("stats")
-            // Keep user-defined policy levels, only strip the stats-related system block
-            json.get("policy")?.takeIf { it.isJsonObject }?.asJsonObject?.let { policy ->
-                policy.remove("system")
-                if (policy.entrySet().isEmpty()) {
-                    json.remove("policy")
-                }
-            }
+        // The home traffic line reads these counters even when notification speed text is off.
+        if (!json.has("stats")) {
+            json.add("stats", JsonObject())
         }
+        val policyObj = json.get("policy")?.takeIf { it.isJsonObject }?.asJsonObject
+            ?: JsonObject().also { json.add("policy", it) }
+        val systemObj = policyObj.get("system")?.takeIf { it.isJsonObject }?.asJsonObject
+            ?: JsonObject().also { policyObj.add("system", it) }
+        systemObj.addProperty("statsOutboundUplink", true)
+        systemObj.addProperty("statsOutboundDownlink", true)
 
         if (!needTun()) {
             return JsonUtil.toJsonPretty(json)?.let { ConfigResult(true, configContext.guid, it) } ?: result
@@ -725,12 +712,19 @@ object CoreConfigManager {
     }
 
     /**
-     * Remove speed-test runtime sections when the feature is disabled.
+     * Keep outbound counters in the generated config.
+     * [AppConfig.PREF_SPEED_ENABLED] only controls the notification text.
      */
     private fun applySpeedDisabled(v2rayConfig: V2rayConfig) {
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) != true) {
-            v2rayConfig.stats = null
-            v2rayConfig.policy?.system = null
+        if (v2rayConfig.stats == null) {
+            v2rayConfig.stats = emptyMap<String, Any>()
+        }
+        val policy = v2rayConfig.policy
+        if (policy != null && policy.system == null) {
+            policy.system = mapOf(
+                "statsOutboundUplink" to true,
+                "statsOutboundDownlink" to true,
+            )
         }
     }
 

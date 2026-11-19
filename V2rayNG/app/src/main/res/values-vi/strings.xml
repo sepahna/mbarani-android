@@ -423,6 +423,15 @@
     <string name="connection_test_error_status_code">Mã lỗi: #%d</string>
     <string name="connection_connected">Đã kết nối.\nNhấn để kiểm tra kết nối.</string>
     <string name="connection_not_connected">Chưa kết nối</string>
+
+    <string name="home_line_direct">Đường truyền của bạn</string>
+    <string name="home_line_vpn">Qua VPN</string>
+    <string name="home_line_unknown">Đang kiểm tra IP…</string>
+    <string name="home_line_unavailable">Không có IP</string>
+    <string name="home_speed_down">Tải xuống %1$s</string>
+    <string name="home_speed_up">Tải lên %1$s</string>
+    <string name="home_traffic_session">Lưu lượng %1$s</string>
+    <string name="home_line_summary">%1$s, %2$s, %3$s, %4$s, %5$s</string>
     <string name="connection_running_task_left">Số lượt kiểm tra đang chạy: %s</string>
 
     <string name="import_subscription_success">Nhập gói đăng ký thành công!</string>

@@ -71,7 +71,21 @@ object SpeedtestManager {
             )
         ) ?: return null
         val ipInfo = JsonUtil.fromJsonSafe(content, IPAPIInfo::class.java) ?: return null
+        return endpointFrom(ipInfo)
+    }
 
+    /** Public address on the device's own line. The app is excluded from the VPN, so this bypasses the tunnel. */
+    fun getDirectIPInfo(): RemoteEndpointInfo? {
+        val url = MmkvManager.decodeSettingsString(AppConfig.PREF_IP_API_URL)
+            .takeIf { !it.isNullOrBlank() } ?: AppConfig.IP_API_URL
+        val content = HttpUtil.getUrlContent(
+            UrlContentRequest(url = url, timeout = 5000)
+        ) ?: return null
+        val ipInfo = JsonUtil.fromJsonSafe(content, IPAPIInfo::class.java) ?: return null
+        return endpointFrom(ipInfo)
+    }
+
+    internal fun endpointFrom(ipInfo: IPAPIInfo): RemoteEndpointInfo? {
         val ip = listOf(
             ipInfo.ip,
             ipInfo.clientIp,
@@ -86,6 +100,7 @@ object SpeedtestManager {
             ipInfo.location?.country_code
         ).firstOrNull { !it.isNullOrBlank() }
 
+        if (ip.isNullOrBlank() && country.isNullOrBlank()) return null
         return RemoteEndpointInfo(
             country = country,
             ipAddress = ip,

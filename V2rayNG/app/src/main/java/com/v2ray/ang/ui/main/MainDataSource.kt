@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.main
 
 import com.v2ray.ang.dto.ServerSortMode
+import com.v2ray.ang.handler.SpeedtestManager
 import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
@@ -66,6 +67,7 @@ interface MainDataSource : Closeable {
     fun sendMsg2TestService(msg: TestServiceMessage, requestId: String? = null)
     fun cancelAllPing()
     fun testCurrentServerRealPing(requestId: String)
+    fun lookupPublicEndpoint(throughProxy: Boolean): SpeedtestManager.RemoteEndpointInfo?
 
     fun syncSubscriptions()
     fun initAssets()

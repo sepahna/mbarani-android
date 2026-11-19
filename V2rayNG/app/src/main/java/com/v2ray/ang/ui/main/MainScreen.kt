@@ -277,7 +277,11 @@ fun MainScreen(
                         .fillMaxSize()
                         .padding(innerPadding)
                 ) {
-                    if (groups.size > 1) {
+                    HomeStatusStrip(
+                    mainViewModel = mainViewModel,
+                    onRefresh = { onAction(MainAction.RefreshLine) },
+                )
+                if (groups.size > 1) {
                         GroupTabBar(
                             groups = groups,
                             selectedTabIndex = pagerState.currentPage.coerceIn(0, groups.lastIndex),

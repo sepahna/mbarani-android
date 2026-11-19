@@ -454,6 +454,15 @@
     <string name="connection_test_error_status_code">کد خطا: #%d</string>
     <string name="connection_connected">متصل است.\nبرای بررسی اتصال ضربه بزنید.</string>
     <string name="connection_not_connected">متصل نیست</string>
+
+    <string name="home_line_direct">خط شما</string>
+    <string name="home_line_vpn">از وی‌پی‌ان</string>
+    <string name="home_line_unknown">در حال بررسی آی‌پی…</string>
+    <string name="home_line_unavailable">آی‌پی نامشخص</string>
+    <string name="home_speed_down">دانلود %1$s</string>
+    <string name="home_speed_up">آپلود %1$s</string>
+    <string name="home_traffic_session">ترافیک %1$s</string>
+    <string name="home_line_summary">%1$s، %2$s، %3$s، %4$s، %5$s</string>
     <string name="connection_running_task_left">آزمایش‌های در حال اجرا: %s</string>
 
     <string name="import_subscription_success">اشتراک با موفقیت وارد شد</string>

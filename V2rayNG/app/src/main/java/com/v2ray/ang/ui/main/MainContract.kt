@@ -73,6 +73,7 @@ sealed interface MainAction {
     data object DismissQRCodeDialog : MainAction
     data class OpenSubscriptionLink(val url: String) : MainAction
     data class OpenSite(val url: String, val title: String) : MainAction
+    data object RefreshLine : MainAction
 
     data class ImportBatchConfig(val configText: String) : MainAction
 

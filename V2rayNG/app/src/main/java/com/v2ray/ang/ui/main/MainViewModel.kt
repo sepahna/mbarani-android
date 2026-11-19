@@ -32,6 +32,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -88,6 +89,10 @@ class MainViewModel(
         )
     )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+
+    private val _homeLine = MutableStateFlow(HomeLineState())
+    val homeLine: StateFlow<HomeLineState> = _homeLine.asStateFlow()
+    private var lineLookupJob: Job? = null
 
     // ---------- Keyword filtering ----------
     @Volatile
@@ -147,6 +152,18 @@ class MainViewModel(
             }
 
             MainServiceEvent.StateStopSuccess -> updateRunningState(false)
+            is MainServiceEvent.Traffic -> {
+                if (!uiState.value.isRunning) return
+                _homeLine.update { state ->
+                    state.withTraffic(
+                        uploadBytes = event.sample.uploadBytes,
+                        downloadBytes = event.sample.downloadBytes,
+                        elapsedMillis = event.sample.elapsedMillis,
+                        sessionUploadBytes = event.sample.sessionUploadBytes,
+                        sessionDownloadBytes = event.sample.sessionDownloadBytes,
+                    )
+                }
+            }
             is MainServiceEvent.MeasureDelayResult -> {
                 if (!uiState.value.isRunning || !testRequests.completeCurrent(event.requestId)) return
                 _uiState.update { it.copy(isTesting = testRequests.isTesting, status = MainStatus.ConnectionTest(event.result)) }
@@ -312,6 +329,7 @@ class MainViewModel(
             is MainAction.Search -> filterConfig(action.query)
             is MainAction.ImportBatchConfig -> importBatchConfig(action.configText)
             MainAction.LocateHandled -> consumeLocateTarget()
+            MainAction.RefreshLine -> refreshEndpoint()
             is MainAction.ShareQRCode -> {
                 if (isFreeServer(action.guid)) return
                 val bitmap = dataSource.share2QRCode(action.guid)
@@ -344,6 +362,7 @@ class MainViewModel(
 
     // ---------- Initialization ----------
     fun initialize() {
+        refreshEndpoint()
         viewModelScope.launch(preloadDispatcher) {
             try {
                 initialPageReady.await()
@@ -1135,6 +1154,46 @@ class MainViewModel(
                 else if (running) MainStatus.Connected else MainStatus.Disconnected
             )
         }
+        syncHomeLine(running)
+    }
+
+    private fun syncHomeLine(running: Boolean) {
+        val current = _homeLine.value
+        if (current.throughVpn == running && (current.ipAddress != null || current.checking)) return
+        val switched = current.throughVpn != running
+        _homeLine.update { state ->
+            val reset = if (switched) state.clearedTraffic() else state
+            reset.copy(
+                throughVpn = running,
+                checking = true,
+                ipAddress = if (switched) null else state.ipAddress,
+                countryCode = if (switched) null else state.countryCode,
+            )
+        }
+        refreshEndpoint(settle = running)
+    }
+
+    private fun refreshEndpoint(settle: Boolean = false) {
+        val throughVpn = _homeLine.value.throughVpn
+        lineLookupJob?.cancel()
+        _homeLine.update { it.copy(checking = true) }
+        lineLookupJob = viewModelScope.launch(ioDispatcher) {
+            if (settle && throughVpn) delay(700)
+            val endpoint = runCatching { dataSource.lookupPublicEndpoint(throughVpn) }
+                .onFailure { error ->
+                    if (error is CancellationException) throw error
+                    LogUtil.e(AppConfig.TAG, "Home line lookup failed, throughVpn=$throughVpn", error)
+                }
+                .getOrNull()
+            if (!isActive || _homeLine.value.throughVpn != throughVpn) return@launch
+            _homeLine.update { state ->
+                state.copy(
+                    checking = false,
+                    ipAddress = endpoint?.ipAddress ?: state.ipAddress,
+                    countryCode = endpoint?.country ?: state.countryCode,
+                )
+            }
+        }
     }
 
     override fun onCleared() {
@@ -1144,6 +1203,7 @@ class MainViewModel(
         reloadJob?.cancel()
         filterJob?.cancel()
         cancelAllPing()
+        lineLookupJob?.cancel()
         dataSource.close()
         super.onCleared()
     }
