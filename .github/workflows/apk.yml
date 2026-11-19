@@ -153,19 +153,25 @@ jobs:
           APK="$(ls V2rayNG/app/build/outputs/apk/playstore/release/*universal*.apk)"
           # Builds that are not on master stay drafts, so the in-app updater
           # does not offer them and only people with access to the repo can download them.
-          DRAFT_ARGS=()
           TITLE="Barani Core $VER"
-          if [ "${GITHUB_REF}" != "refs/heads/master" ]; then
-            DRAFT_ARGS+=(--draft)
-            TITLE="Barani Core $VER (test)"
-          fi
-          if gh release view "v$VER" >/dev/null 2>&1; then
-            gh release upload "v$VER" "$APK" --clobber
-            gh release edit "v$VER" "${DRAFT_ARGS[@]}" --title "$TITLE" --notes-file "$NOTES_FILE"
+          if [ "${GITHUB_REF}" = "refs/heads/master" ]; then
+            if gh release view "v$VER" >/dev/null 2>&1; then
+              gh release upload "v$VER" "$APK" --clobber
+              gh release edit "v$VER" --draft=false --latest --title "$TITLE" --notes-file "$NOTES_FILE"
+            else
+              gh release create "v$VER" "$APK" --latest \
+                --title "$TITLE" \
+                --notes-file "$NOTES_FILE"
+            fi
           else
-            gh release create "v$VER" "$APK" \
-              "${DRAFT_ARGS[@]}" \
-              --title "$TITLE" \
-              --notes-file "$NOTES_FILE"
+            TITLE="Barani Core $VER (test)"
+            if gh release view "v$VER" >/dev/null 2>&1; then
+              gh release upload "v$VER" "$APK" --clobber
+              gh release edit "v$VER" --draft --title "$TITLE" --notes-file "$NOTES_FILE"
+            else
+              gh release create "v$VER" "$APK" --draft \
+                --title "$TITLE" \
+                --notes-file "$NOTES_FILE"
+            fi
           fi
           gh release delete apk --yes --cleanup-tag || true

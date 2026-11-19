@@ -1,5 +1,5 @@
 {
-  "version": "2.3.41",
-  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.41/barani_2.3.41_universal.apk",
-  "notes": "دکمه بررسی کانفیگ رایگان، میانبر به‌روزرسانی اشتراک، آموزش وارد کردن کانفیگ، و ویرایش دسته‌بندی از لمس طولانی.\n\nCheck for a free config, refresh the current subscription from the bottom bar, a config-import guide, and edit a category from a long press."
+  "version": "2.3.43",
+  "apk": "https://github.com/sepahna/mbarani-android/releases/download/v2.3.43/barani_2.3.43_universal.apk",
+  "notes": "کارت وضعیت با پرچم و آی‌پی، نمودار نرم ترافیک، و دکمه روشن و خاموش قرمز و سبز.\n\nA status card with flag and IP, a smooth traffic graph, and a red or green power button."
 }
