@@ -436,6 +436,9 @@
 
     <string name="home_line_direct">خطك</string>
     <string name="home_line_vpn">عبر VPN</string>
+    <string name="home_line_vpn_country">عبر VPN - %1$s</string>
+    <string name="home_line_ip_show">إظهار عنوان IP كاملًا</string>
+    <string name="home_line_ip_hide">إخفاء عنوان IP</string>
     <string name="home_line_unknown">جارٍ فحص عنوان IP…</string>
     <string name="home_line_unavailable">عنوان IP غير متاح</string>
     <string name="home_speed_down">التنزيل %1$s</string>

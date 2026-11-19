@@ -1,11 +1,15 @@
 تغییرات این نسخه
 - بالای دسته‌بندی‌ها کارت وضعیت اضافه شد: پرچم و آی‌پی خط خودت، و بعد از اتصال پرچم و آی‌پی خروجی وی‌پی‌ان
 - سرعت دانلود و آپلود، حجم همین اتصال، و نمودار کوچک ترافیک روی همان کارت نشان داده می‌شود
-- لمس کارت، آی‌پی و کشور را دوباره بررسی می‌کند
+- تا وقتی روی آی‌پی خروجی بزنی، فقط بخش اولش دیده می‌شود
+- کنار «از وی‌پی‌ان» نام کشور نوشته می‌شود
+- نمودار ترافیک نرم‌تر کشیده می‌شود
 - دکمه روشن و خاموش پایین صفحه خاموش قرمز و روشن سبز است
 
 What's new
 - A status card above the categories shows your line's flag and IP, then the VPN exit flag and IP after you connect
 - The same card shows download and upload speed, traffic for this connection, and a small graph
-- Tap the card to check the IP and country again
+- The VPN address stays partly hidden until you tap it
+- The country name appears next to Through VPN
+- The traffic graph is a smooth wave
 - The power button is red while off and green while on

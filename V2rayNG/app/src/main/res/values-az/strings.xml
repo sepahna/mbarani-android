@@ -428,6 +428,9 @@
 
     <string name="home_line_direct">Sizin xətt</string>
     <string name="home_line_vpn">VPN ilə</string>
+    <string name="home_line_vpn_country">VPN ilə - %1$s</string>
+    <string name="home_line_ip_show">Tam IP-ni göstər</string>
+    <string name="home_line_ip_hide">IP-ni gizlət</string>
     <string name="home_line_unknown">IP yoxlanılır…</string>
     <string name="home_line_unavailable">IP yoxdur</string>
     <string name="home_speed_down">Yükləmə %1$s</string>

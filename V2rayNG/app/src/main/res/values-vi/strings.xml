@@ -426,6 +426,9 @@
 
     <string name="home_line_direct">Đường truyền của bạn</string>
     <string name="home_line_vpn">Qua VPN</string>
+    <string name="home_line_vpn_country">Qua VPN - %1$s</string>
+    <string name="home_line_ip_show">Hiện đầy đủ IP</string>
+    <string name="home_line_ip_hide">Ẩn IP</string>
     <string name="home_line_unknown">Đang kiểm tra IP…</string>
     <string name="home_line_unavailable">Không có IP</string>
     <string name="home_speed_down">Tải xuống %1$s</string>

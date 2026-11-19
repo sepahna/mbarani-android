@@ -14,6 +14,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -21,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -45,10 +49,23 @@ fun HomeStatusStrip(
     onRefresh: () -> Unit,
 ) {
     val line by mainViewModel.homeLine.collectAsStateWithLifecycle()
-    val label = stringResource(if (line.throughVpn) R.string.home_line_vpn else R.string.home_line_direct)
-    val ipText = line.ipAddress ?: stringResource(
-        if (line.checking) R.string.home_line_unknown else R.string.home_line_unavailable
-    )
+    var showFullIp by rememberSaveable(line.ipAddress) { mutableStateOf(false) }
+    val locale = LocalConfiguration.current.locales[0]
+    val countryName = countryDisplayName(line.countryCode, locale)
+    val label = if (line.throughVpn && !countryName.isNullOrBlank()) {
+        stringResource(R.string.home_line_vpn_country, countryName)
+    } else {
+        stringResource(if (line.throughVpn) R.string.home_line_vpn else R.string.home_line_direct)
+    }
+    val canRevealIp = line.throughVpn && !line.ipAddress.isNullOrBlank()
+    val ipText = when {
+        line.ipAddress.isNullOrBlank() -> stringResource(
+            if (line.checking) R.string.home_line_unknown else R.string.home_line_unavailable
+        )
+        canRevealIp && !showFullIp -> maskIpAddress(line.ipAddress)
+        else -> line.ipAddress.orEmpty()
+    }
+    val ipAction = stringResource(if (showFullIp) R.string.home_line_ip_hide else R.string.home_line_ip_show)
     val downloadText = stringResource(R.string.home_speed_down, line.downloadBytesPerSecond.toSpeedString())
     val uploadText = stringResource(R.string.home_speed_up, line.uploadBytesPerSecond.toSpeedString())
     val trafficText = stringResource(
@@ -93,7 +110,15 @@ fun HomeStatusStrip(
                         style = MaterialTheme.typography.titleMedium,
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
-                        maxLines = 1
+                        maxLines = 1,
+                        modifier = Modifier
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = if (canRevealIp) "$ipText, $ipAction" else ipText
+                            }
+                            .clickable {
+                                if (canRevealIp) showFullIp = !showFullIp else onRefresh()
+                            }
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
@@ -144,11 +169,27 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawSpeedPath(value
         drawCircle(color = color, radius = 2.dp.toPx(), center = Offset(size.width, y))
         return
     }
-    val path = Path()
-    values.forEachIndexed { index, value ->
-        val x = index.toFloat() / (values.lastIndex).toFloat() * size.width
-        val y = size.height - (value / maxValue) * (size.height - 2.dp.toPx())
-        if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+    val points = values.mapIndexed { index, value ->
+        Offset(
+            x = index.toFloat() / values.lastIndex.toFloat() * size.width,
+            y = size.height - (value / maxValue) * (size.height - 2.dp.toPx()),
+        )
     }
+    val path = Path().apply {
+        moveTo(points.first().x, points.first().y)
+        for (index in 0 until points.lastIndex) {
+            val start = points[index]
+            val end = points[index + 1]
+            val midX = (start.x + end.x) / 2f
+            cubicTo(midX, start.y, midX, end.y, end.x, end.y)
+        }
+    }
+    val fill = Path().apply {
+        addPath(path)
+        lineTo(points.last().x, size.height)
+        lineTo(points.first().x, size.height)
+        close()
+    }
+    drawPath(path = fill, color = color.copy(alpha = 0.16f))
     drawPath(path = path, color = color, style = stroke)
 }

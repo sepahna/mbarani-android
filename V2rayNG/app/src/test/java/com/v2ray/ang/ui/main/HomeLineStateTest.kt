@@ -6,8 +6,24 @@ import com.v2ray.ang.util.proxyTransferBytes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.Locale
 
 class HomeLineStateTest {
+
+    @Test
+    fun vpnAddressKeepsOnlyTheFirstGroup() {
+        assertEquals("195.***.***.***", maskIpAddress("195.123.209.211"))
+        assertEquals("8.***.***.***", maskIpAddress("8.8.8.8"))
+        assertEquals("2001:****", maskIpAddress("2001:db8::1"))
+        assertEquals("", maskIpAddress("  "))
+    }
+
+    @Test
+    fun countryCodeBecomesANameBesideTheVpnLabel() {
+        assertEquals("Germany", countryDisplayName("DE", Locale.ENGLISH))
+        assertEquals("Iran", countryDisplayName("ir", Locale.ENGLISH))
+        assertEquals("Germany", countryDisplayName("Germany", Locale.ENGLISH))
+    }
 
     @Test
     fun flagUsesATwoLetterCountryCode() {

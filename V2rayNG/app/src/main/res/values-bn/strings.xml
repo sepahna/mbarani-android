@@ -428,6 +428,9 @@
 
     <string name="home_line_direct">আপনার লাইন</string>
     <string name="home_line_vpn">ভিপিএনের মাধ্যমে</string>
+    <string name="home_line_vpn_country">ভিপিএনের মাধ্যমে - %1$s</string>
+    <string name="home_line_ip_show">সম্পূর্ণ আইপি দেখান</string>
+    <string name="home_line_ip_hide">আইপি লুকান</string>
     <string name="home_line_unknown">আইপি দেখা হচ্ছে…</string>
     <string name="home_line_unavailable">আইপি পাওয়া যায়নি</string>
     <string name="home_speed_down">ডাউনলোড %1$s</string>

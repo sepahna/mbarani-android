@@ -428,6 +428,9 @@
 
     <string name="home_line_direct">خط ایسا</string>
     <string name="home_line_vpn">ز وی‌پی‌ان</string>
+    <string name="home_line_vpn_country">ز وی‌پی‌ان - %1$s</string>
+    <string name="home_line_ip_show">نمایش آی‌پی کامل</string>
+    <string name="home_line_ip_hide">پنهان کردن آی‌پی</string>
     <string name="home_line_unknown">هونی واجۊری آی‌پی…</string>
     <string name="home_line_unavailable">آی‌پی نادیار</string>
     <string name="home_speed_down">دانلود %1$s</string>

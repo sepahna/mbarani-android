@@ -457,6 +457,9 @@
 
     <string name="home_line_direct">Your line</string>
     <string name="home_line_vpn">Through VPN</string>
+    <string name="home_line_vpn_country">Through VPN - %1$s</string>
+    <string name="home_line_ip_show">Show full IP</string>
+    <string name="home_line_ip_hide">Hide full IP</string>
     <string name="home_line_unknown">Checking IP…</string>
     <string name="home_line_unavailable">IP unavailable</string>
     <string name="home_speed_down">Download %1$s</string>

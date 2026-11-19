@@ -426,6 +426,9 @@
 
     <string name="home_line_direct">当前线路</string>
     <string name="home_line_vpn">通过 VPN</string>
+    <string name="home_line_vpn_country">通过 VPN - %1$s</string>
+    <string name="home_line_ip_show">显示完整 IP</string>
+    <string name="home_line_ip_hide">隐藏 IP</string>
     <string name="home_line_unknown">正在查询 IP…</string>
     <string name="home_line_unavailable">无法获取 IP</string>
     <string name="home_speed_down">下载 %1$s</string>

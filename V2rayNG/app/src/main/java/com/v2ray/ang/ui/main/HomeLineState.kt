@@ -61,6 +61,31 @@ internal fun appendSpeedSample(history: List<Float>, bytesPerSecond: Long, elaps
     return next
 }
 
+/** First IPv4 group stays visible. The rest of a VPN address stays hidden until the user asks. */
+fun maskIpAddress(ipAddress: String?): String {
+    val ip = ipAddress?.trim().orEmpty()
+    if (ip.isEmpty()) return ""
+    val groups = ip.split('.')
+    if (groups.size == 4 && groups.all { group -> group.isNotEmpty() && group.all(Char::isDigit) }) {
+        return groups[0] + ".***.***.***"
+    }
+    val v6 = ip.split(':')
+    if (v6.size > 1) {
+        val head = v6.firstOrNull { it.isNotEmpty() } ?: "*"
+        return "$head:****"
+    }
+    return ip
+}
+
+fun countryDisplayName(country: String?, locale: java.util.Locale): String? {
+    val value = country?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    if (value.length == 2 && value.all { it.isLetter() }) {
+        val name = java.util.Locale("", value.uppercase()).getDisplayCountry(locale)
+        if (name.isNotBlank() && !name.equals(value, ignoreCase = true)) return name
+    }
+    return value
+}
+
 fun countryFlagEmoji(countryCode: String?): String {
     val code = countryCode?.trim()?.uppercase() ?: return ""
     if (code.length != 2 || code.any { it !in 'A'..'Z' }) return ""

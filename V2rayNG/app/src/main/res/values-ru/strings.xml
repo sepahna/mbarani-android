@@ -432,6 +432,9 @@
 
     <string name="home_line_direct">Ваша линия</string>
     <string name="home_line_vpn">Через VPN</string>
+    <string name="home_line_vpn_country">Через VPN — %1$s</string>
+    <string name="home_line_ip_show">Показать полный IP</string>
+    <string name="home_line_ip_hide">Скрыть IP</string>
     <string name="home_line_unknown">Проверка IP…</string>
     <string name="home_line_unavailable">IP недоступен</string>
     <string name="home_speed_down">Загрузка %1$s</string>

@@ -457,6 +457,9 @@
 
     <string name="home_line_direct">خط شما</string>
     <string name="home_line_vpn">از وی‌پی‌ان</string>
+    <string name="home_line_vpn_country">از وی‌پی‌ان - %1$s</string>
+    <string name="home_line_ip_show">نمایش آی‌پی کامل</string>
+    <string name="home_line_ip_hide">پنهان کردن آی‌پی</string>
     <string name="home_line_unknown">در حال بررسی آی‌پی…</string>
     <string name="home_line_unavailable">آی‌پی نامشخص</string>
     <string name="home_speed_down">دانلود %1$s</string>
